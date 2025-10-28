@@ -1,10 +1,7 @@
-// -- START KODE SCRIPT.JS --
-
 document.addEventListener('DOMContentLoaded', () => {
-    // KONFIGURASI DAN STATE APLIKASI
     const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
     const HOUR_WIDTH = 50;
-    const KD_HEIGHT_UNIT = 40; // Pastikan ini sama dengan variabel --kd-height di CSS jika Anda pakai
+    const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
     const PENDING_FORM_KEY = 'pendingShipForm';
 
@@ -18,10 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let restSchedules = JSON.parse(localStorage.getItem('restSchedules')) || [];
     let editingRestIndex = null;
 
-    // State untuk Garis Waktu (tidak dipakai lagi untuk elemen #draggable-line)
-    // let draggableLineLeft = JSON.parse(localStorage.getItem('draggableLinePosition')) || 200;
+    let draggableLineLeft = JSON.parse(localStorage.getItem('draggableLinePosition')) || 200; 
 
-    // REFERENSI ELEMEN DOM
     const grid = document.getElementById('grid');
     const yAxis = document.querySelector('.y-axis');
     const xAxis = document.querySelector('.x-axis');
@@ -39,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const berthLabelsContainer = document.querySelector('.berth-labels-container');
     const berthMapContainer = document.getElementById('berth-map-container');
 
-    // Referensi DOM untuk Maintenance
     const addMaintenanceBtn = document.getElementById('add-maintenance-btn');
     const maintenanceModal = document.getElementById('maintenance-modal');
     const maintenanceCloseBtn = maintenanceModal.querySelector('.close-btn');
@@ -47,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const maintenanceModalTitle = document.getElementById('maintenance-modal-title');
     const maintenanceSubmitBtn = maintenanceForm.querySelector('button[type="submit"]');
 
-    // Referensi DOM untuk Istirahat
     const addRestBtn = document.getElementById('add-rest-btn');
     const restModal = document.getElementById('rest-modal');
     const restCloseBtn = restModal.querySelector('.close-btn');
@@ -55,19 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const restModalTitle = document.getElementById('rest-modal-title');
     const restSubmitBtn = restForm.querySelector('button[type="submit"]');
 
-    // Referensi Tombol Hapus
     const deleteShipBtn = document.getElementById('delete-ship-btn');
     const deleteMaintenanceBtn = document.getElementById('delete-maintenance-btn');
     const deleteRestBtn = document.getElementById('delete-rest-btn');
 
-     // Referensi untuk garis
     const berthDividerLine = document.getElementById('berth-divider-line');
-    const currentTimeIndicator = document.getElementById('current-time-indicator');
+    const currentTimeIndicator = document.getElementById('current-time-indicator'); // Tetap pakai ID ini
 
-
-    // FUNGSI INTI APLIKASI
     function renderShips() {
-        // Hapus kapal lama dari grid
         grid.querySelectorAll('.ship-wrapper').forEach(el => el.remove());
 
         const weekStart = new Date(currentStartDate);
@@ -75,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         weekEnd.setDate(weekEnd.getDate() + 7);
 
         const visibleShips = shipSchedules.filter(ship => {
-            // Validasi tanggal dasar sebelum konversi
             if (!ship.etaTime || !ship.endTime) {
                  console.warn("Skipping ship due to missing dates:", ship);
                  return false;
@@ -96,25 +83,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const etc = ship.etcTime ? new Date(ship.etcTime) : null;
             const etd = new Date(ship.endTime);
 
-             // Pengecekan tanggal lagi sebelum kalkulasi
             if (isNaN(eta) || isNaN(etb) || isNaN(etd) || (etc && isNaN(etc)) ) {
                 console.warn("Skipping ship render due to invalid date after filter:", ship);
-                return; // Lewati kapal ini
+                return; 
             }
 
             const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
             const left = getHoursSinceWeekStart(eta) * HOUR_WIDTH;
-            const width = Math.max(((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2); // Lebar minimum
+            const width = Math.max(((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2);
             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
             const top = (ship.berthLocation - KD_MIN) * kdUnitPx;
-             // Validasi tinggi agar tidak negatif atau terlalu kecil
             const calculatedHeight = ship.length * kdUnitPx;
-            const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); // Tinggi minimum
+            const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); 
 
             const contentLeft = Math.max(((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, 0);
-            const contentWidth = Math.max(((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4); // Lebar konten minimum
+            const contentWidth = Math.max(((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4); 
 
-            // Validasi posisi top dan left agar tidak negatif
             const finalTop = Math.max(top, 0);
             const finalLeft = Math.max(left, 0);
 
@@ -171,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             wrapper.addEventListener('dblclick', () => editShip(shipIndex));
             wrapper.title = 'Double click untuk mengedit';
-            grid.appendChild(wrapper); // Tambahkan kapal ke grid
+            grid.appendChild(wrapper); 
         });
     }
 
@@ -252,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // (Fungsi saveCommLog, loadCommLog tidak berubah)
     function saveCommLog() {
         const table = document.getElementById('comm-log-table');
         const rows = table.querySelectorAll('tbody tr');
@@ -297,8 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // (Fungsi savePendingForm, loadPendingForm, clearPendingForm tidak berubah)
      function savePendingForm() {
         if (editingShipIndex === null) {
             const formData = new FormData(shipForm);
@@ -321,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
         shipForm.reset();
     }
 
-    // (Fungsi Helper Waktu tidak berubah)
     function getStartOfWeek(date) {
         const d = new Date(date);
         d.setHours(0, 0, 0, 0);
@@ -356,50 +336,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Fungsi Inisialisasi
     function initialize() {
-        updateDisplay(); // Panggil updateDisplay yang akan memanggil drawGrid
+        updateDisplay(); 
         setupEventListeners();
         loadCommLog();
-         // Update garis waktu setiap menit
-        setInterval(updateCurrentTimeIndicator, 60 * 1000);
     }
 
-    // Fungsi Menggambar Grid (Diperbarui Total)
     function drawGrid() {
-        yAxis.innerHTML = '';
-        xAxis.innerHTML = '';
-        hourAxis.innerHTML = '';
-        berthLabelsContainer.innerHTML = '';
-        grid.innerHTML = ''; // Hapus semua isi grid lama (termasuk sel, divider, time indicator)
+        yAxis.innerHTML = ''; xAxis.innerHTML = ''; hourAxis.innerHTML = ''; berthLabelsContainer.innerHTML = '';
+        grid.innerHTML = ''; 
 
         const oldSeparator = berthMapContainer.querySelector('.berth-separator');
-        if (oldSeparator) oldSeparator.remove(); // Hapus separator lama dari container map
+        if (oldSeparator) oldSeparator.remove();
 
-        const totalHours = 24 * 7; // Total jam dalam seminggu
-        const totalKdSteps = KD_MARKERS.length; // Jumlah baris KD
+        const totalHours = 24 * 7; 
+        const totalKdSteps = KD_MARKERS.length; 
 
-        // 1. Setup Grid Container
+       
+        grid.style.position = 'relative'; 
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `repeat(${totalHours}, ${HOUR_WIDTH}px)`;
-        // Baris dibuat sejumlah KD_MARKERS
-        grid.style.gridTemplateRows = `repeat(${totalKdSteps -1}, ${KD_HEIGHT_UNIT}px)`; // -1 karena KD_MARKERS punya satu lebih banyak
-        grid.style.width = `${totalHours * HOUR_WIDTH}px`; // Lebar total grid
-        grid.style.height = `${(totalKdSteps - 1) * KD_HEIGHT_UNIT}px`; // Tinggi total grid
+        grid.style.gridTemplateRows = `repeat(${totalKdSteps - 1}, ${KD_HEIGHT_UNIT}px)`;
+        grid.style.width = `${totalHours * HOUR_WIDTH}px`;
+        grid.style.height = `${(totalKdSteps - 1) * KD_HEIGHT_UNIT}px`;
 
-        // 2. Buat Sel Grid
-        for (let row = 0; row < totalKdSteps -1; row++) {
+        for (let row = 0; row < totalKdSteps - 1; row++) {
             for (let col = 0; col < totalHours; col++) {
                 const cell = document.createElement('div');
                 cell.classList.add('grid-cell');
-                // Tambahkan style inline jika perlu untuk border spesifik
-                // cell.style.gridColumnStart = col + 1;
-                // cell.style.gridRowStart = row + 1;
                 grid.appendChild(cell);
             }
         }
 
-        // 3. Tambahkan kembali elemen garis divider dan time indicator ke dalam grid
         const divider = document.createElement('div');
         divider.id = 'berth-divider-line';
         grid.appendChild(divider);
@@ -409,18 +377,16 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.appendChild(timeIndicator);
 
 
-        // 4. Gambar Sumbu Y (KD Labels)
-        const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); // Hitung ulang di sini jika perlu
+        const kdUnitPx = KD_HEIGHT_UNIT; 
         KD_MARKERS.forEach(kd => {
             const label = document.createElement('div');
             label.className = 'kd-label';
             if (kd === 490) label.classList.add('bold');
             label.textContent = kd;
-            label.style.height = `${KD_HEIGHT_UNIT}px`;
+            label.style.height = `${kdUnitPx}px`;
             yAxis.appendChild(label);
         });
 
-        // 5. Gambar Label Berth (Berth 1, Berth 2)
         const berths = [{ name: 'BERTH 2', startKd: 380, endKd: 490 },{ name: 'BERTH 1', startKd: 490, endKd: 600 }];
         berths.forEach(berth => {
             const berthLabelContainer = document.createElement('div');
@@ -428,9 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const berthLabel = document.createElement('div');
             berthLabel.className = 'berth-label';
             berthLabel.textContent = berth.name;
-            // Hitung posisi top dan height berdasarkan KD_MIN dan kdUnitPx
-            const top = (berth.startKd - KD_MIN) * kdUnitPx;
-            const height = (berth.endKd - berth.startKd) * kdUnitPx;
+            const kdStepHeight = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); // Tinggi per 1 KD
+            const top = (berth.startKd - KD_MIN) * kdStepHeight;
+            const height = (berth.endKd - berth.startKd) * kdStepHeight;
             berthLabelContainer.style.top = `${top}px`;
             berthLabelContainer.style.height = `${height}px`;
             berthLabelContainer.appendChild(berthLabel);
@@ -438,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        // 6. Gambar Sumbu X (Hari dan Jam)
         const currentDay = new Date(currentStartDate);
         for (let i = 0; i < 7; i++) {
             const dayLabel = document.createElement('div');
@@ -447,73 +412,97 @@ document.addEventListener('DOMContentLoaded', () => {
             dayLabel.style.width = `${24 * HOUR_WIDTH}px`;
             xAxis.appendChild(dayLabel);
 
-            for (let h = 0; h < 24; h += 2) { // Loop jam per hari
+            for (let h = 0; h < 24; h += 2) { 
                 const hourLabel = document.createElement('div');
                 hourLabel.className = 'hour-label';
                 hourLabel.textContent = h.toString().padStart(2, '0');
-                hourLabel.style.width = `${2 * HOUR_WIDTH}px`; // Lebar untuk 2 jam
+                hourLabel.style.width = `${2 * HOUR_WIDTH}px`; 
                 hourAxis.appendChild(hourLabel);
             }
             currentDay.setDate(currentDay.getDate() + 1);
         }
 
-        // 7. Update posisi garis divider dan time indicator setelah grid digambar
         updateBerthDividerPosition();
-        updateCurrentTimeIndicator();
+        const lineElement = document.getElementById('current-time-indicator');
+        if (lineElement) {
+             lineElement.style.left = `${draggableLineLeft}px`;
+             makeLineDraggable(lineElement);
+        } else {
+            console.error("Element #current-time-indicator not found after grid creation");
+        }
     }
 
-
-    // Fungsi untuk menghitung dan set posisi garis pembagi berth
     function updateBerthDividerPosition() {
         const divider = document.getElementById('berth-divider-line');
         if (divider) {
-             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
-             // Posisi KD 490
-             const topPosition = (490 - KD_MIN) * kdUnitPx;
-             divider.style.top = `${topPosition -1}px`; // Kurangi 1px agar pas di garis
-             // Pastikan style lain sudah ada di CSS
+             const kdStepHeight = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); 
+             const topPosition = (490 - KD_MIN) * kdStepHeight;
+             divider.style.top = `${topPosition - 1}px`; 
         }
     }
 
-    // Fungsi untuk memperbarui posisi garis merah (current time indicator)
     function updateCurrentTimeIndicator() {
-        const timeIndicator = document.getElementById('current-time-indicator');
-        if (timeIndicator) {
-            const now = new Date();
-            // Gunakan currentStartDate sebagai referensi awal minggu
-            const startOfWeek = new Date(currentStartDate);
-            startOfWeek.setHours(0, 0, 0, 0); // Pastikan mulai dari jam 00:00
-
-            const msSinceWeekStart = now.getTime() - startOfWeek.getTime();
-            // Hanya tampilkan jika waktu sekarang berada dalam minggu yang ditampilkan
-            if (msSinceWeekStart >= 0 && msSinceWeekStart < 7 * 24 * 60 * 60 * 1000) {
-                 const hoursSinceWeekStart = msSinceWeekStart / (1000 * 60 * 60);
-                 const leftPosition = hoursSinceWeekStart * HOUR_WIDTH;
-                 timeIndicator.style.left = `${leftPosition}px`;
-                 timeIndicator.style.display = 'block'; // Tampilkan garis
-            } else {
-                 timeIndicator.style.display = 'none'; // Sembunyikan jika di luar minggu
-            }
-        }
+         console.log("updateCurrentTimeIndicator called, but logic is disabled for manual dragging.");
     }
 
+    function makeLineDraggable(line) {
+        if (!line) {
+            console.error("makeLineDraggable called with null element");
+            return;
+        }
+        let isDragging = false;
+        let initialX;
+        let initialLeft;
 
-    // (Fungsi makeLineDraggable tidak diperlukan lagi jika garis merah tidak bisa digeser)
+        line.removeEventListener('mousedown', onMouseDown);
 
+        function onMouseDown(e) {
+             e.preventDefault();
+             isDragging = true;
+             initialX = e.clientX;
+             initialLeft = line.offsetLeft;
+             document.addEventListener('mousemove', onDrag);
+             document.addEventListener('mouseup', onDragEnd);
+             console.log("Draggable line: Mouse Down");
+        }
 
-    // Fungsi Update Tampilan
+        function onDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            const dx = e.clientX - initialX;
+            let newLeft = initialLeft + dx;
+
+            const gridWidth = grid.scrollWidth;
+            newLeft = Math.max(0, Math.min(newLeft, gridWidth - line.offsetWidth));
+
+            draggableLineLeft = newLeft; 
+            line.style.left = `${newLeft}px`; 
+        }
+
+        function onDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', onDragEnd);
+            localStorage.setItem('draggableLinePosition', JSON.stringify(draggableLineLeft));
+            console.log("Draggable line: Mouse Up, Position saved:", draggableLineLeft);
+        }
+
+        line.addEventListener('mousedown', onMouseDown);
+
+    }
+
     function updateDisplay() {
         const endDate = new Date(currentStartDate);
         endDate.setDate(endDate.getDate() + 6);
         weekRangeDisplay.textContent = `${formatDate(currentStartDate)} - ${formatDate(endDate)}`;
-        drawGrid(); // Menggambar grid, sumbu, dan garis
-        // Render item di atas grid
+        drawGrid(); 
         renderRestTimes();
         renderMaintenance();
         renderShips();
     }
 
-    // (Fungsi Edit Kapal, Maintenance, Istirahat tidak berubah)
     function fillFormForEdit(ship) {
         document.getElementById('ship-company').value = ship.company;
         document.getElementById('ship-name').value = ship.shipName;
@@ -596,20 +585,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Fungsi Ekspor PDF (versi terakhir, pastikan useCORS: true)
     async function exportToPDF(type = 'weekly') {
         console.log(`[PDF Export] Starting export process for type: ${type}`);
         const { jsPDF } = window.jspdf;
 
-        // --- 1. Referensi Elemen ---
+        
         const pdfHeader = document.getElementById('pdf-header');
         const pelindoLogoInHeader = pdfHeader.querySelector('.pdf-logo');
         const mainHeader = document.querySelector('.main-header');
         const berthMapContainer = document.getElementById('berth-map-container');
         const legendsScrollContainer = document.querySelector('.legends-scroll-container');
-        // const draggableLine = document.getElementById('draggable-line'); // Tidak dipakai lagi
-        const currentTimeIndicatorPDF = document.getElementById('current-time-indicator'); // Ambil garis merah
-        const berthDividerLinePDF = document.getElementById('berth-divider-line'); // Ambil garis hitam
+        const currentTimeIndicatorPDF = document.getElementById('current-time-indicator'); 
+        const berthDividerLinePDF = document.getElementById('berth-divider-line');
         const exportBtn = document.getElementById('export-pdf-btn');
         const pdfOptions = document.getElementById('pdf-options');
         const gridScroll = document.querySelector('.grid-scroll-container');
@@ -623,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("[PDF Export] ERROR: Elemen logo Pelindo (.pdf-logo) tidak ditemukan di dalam #pdf-header!");
             alert("Error: Elemen logo Pelindo tidak ditemukan. Periksa struktur HTML Anda di bagian <div id='pdf-header'>.");
             exportBtn.disabled = false;
-            exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
+             exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
             return;
         } else {
              console.log("[PDF Export] Elemen logo Pelindo ditemukan.");
@@ -640,24 +627,20 @@ document.addEventListener('DOMContentLoaded', () => {
             pelindoLogoInHeader.crossOrigin = "anonymous";
         }
 
-        // if (draggableLine) draggableLine.style.display = 'none'; // Tidak relevan lagi
-        mainHeader.classList.add('hide-for-pdf'); // Sembunyikan header utama aplikasi
+        mainHeader.classList.add('hide-for-pdf'); 
 
-        // Simpan style asli
         const oldHeaderWidth = pdfHeader.style.width;
         const oldMapWidth = berthMapContainer.style.width;
         const oldLegendsWidth = legendsScrollContainer.style.width;
         const oldGridScrollOverflow = gridScroll.style.overflowX;
         const oldGridScrollLeft = gridScroll.scrollLeft;
         const oldLegendsScrollLeft = legendsScrollContainer.scrollLeft;
-        // Simpan display asli garis
         const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
-        const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block'; // Asumsikan divider selalu ada
+        const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block';
 
         let targetScrollLeft = 0;
 
         try {
-            // --- 2. Tentukan Rentang & Nama File ---
             let pdfFileName, pdfDateRangeStr;
             let captureWidth;
             let captureStartX = 0;
@@ -666,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const legendsFullWidth = legendsWrapper.scrollWidth;
             const fullWidth = Math.max(mapFullWidth, legendsFullWidth);
 
-            const hourWidth = HOUR_WIDTH; // Ambil dari konstanta
+            const hourWidth = HOUR_WIDTH;
             const dayWidth = 24 * hourWidth;
             const yAxisWidth = yAxisColumn.offsetWidth;
 
@@ -695,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 gridScroll.scrollLeft = targetScrollLeft;
                 legendsScrollContainer.scrollLeft = targetScrollLeft;
 
-            } else { // weekly
+            } else { 
                 console.log("[PDF Export] Preparing for weekly export...");
                 pdfDateRangeStr = weekRangeDisplay.textContent;
                 pdfFileName = `Berth-Allocation-Mingguan-${pdfDateRangeStr.replace(/[\s/]/g, '')}.pdf`;
@@ -708,17 +691,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 legendsScrollContainer.scrollLeft = 0;
             }
 
-            // --- 3. Siapkan DOM & Tangkap Canvas (DENGAN JEDA) ---
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
             legendsScrollContainer.style.width = `${captureWidth}px`;
             pdfHeader.querySelector('.pdf-date-range').textContent = pdfDateRangeStr;
-            pdfHeader.style.display = 'flex'; // Tampilkan header
-            // Pastikan garis terlihat sebelum capture
+            pdfHeader.style.display = 'flex'; 
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
-            updateCurrentTimeIndicator(); // Update posisi & pastikan display: block jika dalam range
+            if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = 'block'; 
 
-            await new Promise(resolve => setTimeout(resolve, 300)); // Jeda
+
+            await new Promise(resolve => setTimeout(resolve, 300)); 
             console.log("[PDF Export] Delay finished. Starting canvas capture...");
 
             const logoStyles = window.getComputedStyle(pelindoLogoInHeader);
@@ -726,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (logoStyles.display === 'none' || logoStyles.visibility === 'hidden') {
                  console.warn("[PDF Export] WARNING: Logo might be hidden!");
             }
-
 
             const scale = 2;
             const commonOptions = {
@@ -737,38 +718,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 windowWidth: captureWidth
             };
 
-             // Opsi untuk Berth Map Container (termasuk Y-Axis dan Grid Scroll)
             const optionsBerthMap = {
                 ...commonOptions,
-                width: captureWidth, // Lebar sesuai tipe (daily/weekly)
+                width: captureWidth, 
                 height: berthMapContainer.scrollHeight,
-                x: 0, // Selalu mulai dari 0 karena container utama
-                scrollX: (type === 'daily' ? targetScrollLeft : 0), // Beritahu scroll X
+                x: 0, 
+                scrollX: (type === 'daily' ? targetScrollLeft : 0), 
             };
 
             const optionsLegends = {
                 ...commonOptions,
-                 width: captureWidth, // Lebar sesuai tipe
+                 width: captureWidth, 
                  height: legendsScrollContainer.scrollHeight,
-                 x: 0, // Selalu mulai dari 0
-                 scrollX: (type === 'daily' ? targetScrollLeft : 0) // Beritahu scroll X
+                 x: 0, 
+                 scrollX: (type === 'daily' ? targetScrollLeft : 0)
             };
             const optionsHeader = { ...commonOptions, width: captureWidth, height: pdfHeader.offsetHeight, x:0 };
 
             console.log("[PDF Export] Capturing header...");
             const canvasHeader = await html2canvas(pdfHeader, optionsHeader);
             console.log("[PDF Export] Header captured. Capturing Berth Map Container...");
-            // Tangkap seluruh berth map container sekali jalan
             const canvasMapCombined = await html2canvas(berthMapContainer, optionsBerthMap);
             console.log("[PDF Export] Berth Map Container captured. Capturing Legends...");
             const canvasLegends = await html2canvas(legendsScrollContainer, optionsLegends);
             console.log("[PDF Export] Legends captured.");
 
-            // --- 4. Gabungkan di jsPDF ---
             console.log("[PDF Export] Combining canvases into PDF...");
 
             const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
-            const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; // Gunakan lebar map sbg referensi
+            const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; 
             const totalPdfHeightMM = canvases.reduce((sum, c) => sum + (c.height / scale / 96) * 25.4, 0);
 
             const doc = new jsPDF({
@@ -779,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let yOffset = 0;
             for (const canvas of canvases) {
-                const imgData = canvas.toDataURL('image/png');
+                const imgData = canvas.toDataURL('image/png'); 
                 const imgHeightMM = (canvas.height / scale / 96) * 25.4;
                 const imgWidthMM = (canvas.width / scale / 96) * 25.4;
                 doc.addImage(imgData, 'PNG', 0, yOffset, imgWidthMM, imgHeightMM);
@@ -797,21 +775,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } finally {
             console.log("[PDF Export] Cleaning up...");
-            // --- 5. Cleanup ---
             mainHeader.classList.remove('hide-for-pdf');
 
-            // Kembalikan style asli
-            pdfHeader.style.display = 'none'; // Sembunyikan lagi header PDF
+            pdfHeader.style.display = 'none'; 
             pdfHeader.style.width = oldHeaderWidth;
             berthMapContainer.style.width = oldMapWidth;
             legendsScrollContainer.style.width = oldLegendsWidth;
             gridScroll.style.overflowX = oldGridScrollOverflow;
             gridScroll.scrollLeft = oldGridScrollLeft;
             legendsScrollContainer.scrollLeft = oldLegendsScrollLeft;
-            // Kembalikan display garis
-            if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = oldTimeIndicatorDisplay;
-            if(berthDividerLinePDF) berthDividerLinePDF.style.display = oldDividerDisplay;
-
+            if(currentTimeIndicator) currentTimeIndicator.style.display = oldTimeIndicatorDisplay; 
+            if(berthDividerLine) berthDividerLine.style.display = oldDividerDisplay; 
 
             exportBtn.disabled = false;
             exportBtn.innerHTML = originalBtnHTML;
@@ -819,13 +793,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    // Fungsi Setup Event Listener
     function setupEventListeners() {
         prevWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() - 7); updateDisplay(); });
         nextWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() + 7); updateDisplay(); });
 
-        // --- Event Listener Kapal ---
         addShipBtn.addEventListener('click', () => {
             editingShipIndex = null;
             shipForm.reset();
@@ -841,13 +812,11 @@ document.addEventListener('DOMContentLoaded', () => {
             shipForm.classList.remove('edit-mode');
         });
 
-        // Referensi untuk dropdown PDF
         const pdfDropdownBtn = document.getElementById('export-pdf-btn');
         const pdfOptionsContainer = document.getElementById('pdf-options');
         const pdfOptionBtns = document.querySelectorAll('.pdf-option-btn');
 
         window.addEventListener('click', (event) => {
-            // Logika modal
             if (event.target == modal) {
                 modal.style.display = 'none';
                 shipForm.classList.remove('edit-mode');
@@ -861,7 +830,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 restForm.classList.remove('edit-mode');
             }
 
-            // Logika untuk menutup dropdown PDF
             if (pdfOptionsContainer.style.display === 'block' && !pdfDropdownBtn.contains(event.target)) {
                 pdfOptionsContainer.style.display = 'none';
             }
@@ -911,7 +879,6 @@ document.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('input', savePendingForm);
         });
 
-        // --- Event Listener Maintenance ---
         addMaintenanceBtn.addEventListener('click', () => {
             editingMaintenanceIndex = null;
             maintenanceForm.reset();
@@ -937,9 +904,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(maintenanceForm);
             const data = Object.fromEntries(formData.entries());
             data.startKd = parseInt(data.startKd, 10);
-            data.endKd = parseInt(data.endKd, 10); // Simpan End KD
+            data.endKd = parseInt(data.endKd, 10); 
 
-            // Validasi End KD
             if (data.endKd <= data.startKd) {
                 alert("End KD harus lebih besar dari Start KD.");
                 return;
@@ -956,7 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
             maintenanceForm.classList.remove('edit-mode');
         });
 
-        // --- Event Listener Istirahat ---
         addRestBtn.addEventListener('click', () => {
             editingRestIndex = null;
             restForm.reset();
@@ -991,13 +956,11 @@ document.addEventListener('DOMContentLoaded', () => {
             restForm.classList.remove('edit-mode');
         });
 
-        // --- Event Listener Communication Log ---
         const commLogCells = document.querySelectorAll('#comm-log-table td[contenteditable="true"]');
         commLogCells.forEach(cell => {
             cell.addEventListener('input', saveCommLog);
         });
 
-        // --- Event Listener Lainnya ---
         if (clearDataBtn) {
             clearDataBtn.addEventListener('click', () => {
                 if (confirm('Anda yakin ingin menghapus SEMUA data jadwal kapal, maintenance, istirahat, DAN communication log?')) {
@@ -1009,7 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.removeItem('maintenanceSchedules');
                     localStorage.removeItem('restSchedules');
                     localStorage.removeItem('communicationLogData');
-                    localStorage.removeItem('draggableLinePosition'); // Hapus data garis
+                    localStorage.removeItem('draggableLinePosition'); 
 
                     clearPendingForm();
 
@@ -1024,15 +987,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     });
 
-                    // draggableLineLeft = 200; // Tidak dipakai lagi
+                    draggableLineLeft = 200; 
                     updateDisplay();
                 }
             });
         }
 
-        // Event Listener untuk Dropdown PDF
         pdfDropdownBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Hentikan event agar tidak ditangkap window
+            e.stopPropagation(); 
             const isVisible = pdfOptionsContainer.style.display === 'block';
             pdfOptionsContainer.style.display = isVisible ? 'none' : 'block';
         });
@@ -1040,15 +1002,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pdfOptionBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const type = e.target.dataset.type; // 'weekly' or 'daily'
-                exportToPDF(type); // Panggil fungsi ekspor dengan tipe
+                const type = e.target.dataset.type; 
+                exportToPDF(type); 
             });
         });
-    } // Akhir dari setupEventListeners
-
-    // Mulai aplikasi
+    } 
     initialize();
 
-}); // Akhir dari DOMContentLoaded
-
-// -- END KODE SCRIPT.JS --
+}); 
