@@ -1,7 +1,6 @@
-/* STYLING UTAMA & LAYOUT */
 :root {
-    --hour-width: 50px; /* Lebar per jam */
-    --kd-height: 40px; /* Tinggi per KD unit */
+    --hour-width: 50px; 
+    --kd-height: 40px; 
 }
 
 body {
@@ -20,7 +19,6 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* HEADER & KONTROL NAVIGASI */
 .main-header {
     display: flex;
     justify-content: space-between;
@@ -30,7 +28,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Judul Header (Bertumpuk & Tengah) */
 .header-title-container {
     flex-grow: 1;
     text-align: center;
@@ -49,7 +46,6 @@ h2#report-subtitle {
     margin: 0;
 }
 
-/* H2 untuk week-range-display di dalam controls */
 .main-header .controls h2 {
     font-size: 1.2em;
     margin: 0 15px;
@@ -174,9 +170,6 @@ h2#report-subtitle {
 .kd-label:first-child { border-top: 1px solid black; }
 .kd-label.bold { font-weight: bold; color: #000; }
 
-/* Garis pembagi berth (tidak dipakai lagi, diganti #berth-divider-line) */
-/* .berth-separator { ... } */
-
 .grid-scroll-container {
     flex-grow: 1;
     overflow-x: auto;
@@ -206,8 +199,7 @@ h2#report-subtitle {
     font-size: 0.9em;
     background-color: #dbeafe;
     border-top-right-radius: 6px;
-    flex-shrink: 0; /* Penting agar tidak menyusut */
-    /* width diatur oleh JS */
+    flex-shrink: 0; 
 }
 .hour-axis {
     display: flex;
@@ -216,7 +208,7 @@ h2#report-subtitle {
     position: sticky;
     top: 37px;
     z-index: 10;
-    width: max-content; /* Pastikan lebarnya sesuai konten */
+    width: max-content; 
 }
 .hour-label {
     text-align: left;
@@ -225,59 +217,52 @@ h2#report-subtitle {
     padding: 4px 0 4px 4px;
     border-right: 1px dotted #ccc;
     box-sizing: border-box;
-    flex-shrink: 0; /* Penting agar tidak menyusut */
-    /* width diatur oleh JS */
+    flex-shrink: 0; 
 }
 
-/* Styling Grid Utama (menggunakan border pada sel) */
 .grid {
     position: relative;
-    display: grid; /* Akan diatur oleh JS */
+    display: grid; 
     min-height: 500px;
-    width: max-content; /* Lebar sesuai konten (kolom * lebar jam) */
-    /* background-image dihapus */
+    width: max-content; 
+    
 }
 
-/* Sel Grid */
 .grid-cell {
     box-sizing: border-box;
-    border-right: 1px solid #f0f0f0; /* Garis vertikal tipis */
-    border-bottom: 1px solid #f0f0f0; /* Garis horizontal tipis */
+    border-right: 1px solid #f0f0f0; 
+    border-bottom: 1px solid #f0f0f0; 
 }
-/* Hilangkan border paling kanan dan paling bawah jika perlu */
-/* Ini bisa diatur lebih lanjut oleh JS jika diperlukan */
 
-/* Garis Pembagi Berth Hitam */
 #berth-divider-line {
     position: absolute;
     left: 0;
     width: 100%;
     height: 2px;
     background-color: black;
-    z-index: 11; /* Di atas sel grid, di bawah kapal */
+    z-index: 11; 
     pointer-events: none;
-    /* top diatur oleh JS */
 }
 
-/* Garis Indikator Waktu Merah */
 #current-time-indicator {
     position: absolute;
-    top: 0; /* Mulai dari atas grid */
-    height: 100%; /* Sepanjang tinggi grid */
-    width: 2px;
-    background-color: #e53e3e; /* Merah */
-    z-index: 20; /* Di atas segalanya */
-    pointer-events: none; /* Tidak bisa diklik */
-    display: none; /* Awalnya disembunyikan, ditampilkan oleh JS */
-    /* left diatur oleh JS */
+    top: 0; 
+    height: 100%; 
+    width: 3px; 
+    background-color: #e53e3e; 
+    border-left: 1px solid #9b2c2c; 
+    border-right: 1px solid #9b2c2c; 
+    cursor: ew-resize; 
+    z-index: 20; 
+    box-shadow: 0 0 5px rgba(0,0,0,0.3); 
+    display: block;
 }
 
 
-/* STYLING JADWAL KAPAL */
 .ship-wrapper {
     position: absolute;
     cursor: pointer;
-    z-index: 15; /* Di atas garis pembagi, di bawah garis waktu */
+    z-index: 15; 
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -287,7 +272,6 @@ h2#report-subtitle {
     filter: brightness(1.1);
 }
 
-/* (Styling .ship-content, .ship-header, .ship-logo, .ship-body, .ship-footer tidak berubah) */
 .ship-content {
     position: absolute;
     top: 0;
@@ -338,7 +322,7 @@ h2#report-subtitle {
     align-items: center;
     text-align: left;
     padding: 4px;
-    font-size: 1.5em; /* Mungkin terlalu besar? Sesuaikan jika perlu */
+    font-size: 1.5em; 
     line-height: 1.3;
     white-space: pre-wrap;
 }
@@ -371,8 +355,6 @@ h2#report-subtitle {
     padding: 0 5px;
 }
 
-/* ===== MODAL & FORM ===== */
-/* (Styling .modal, .modal-content, .close-btn tidak berubah) */
 .modal {
     display: none;
     position: fixed;
@@ -405,7 +387,6 @@ h2#report-subtitle {
 }
 .close-btn:hover, .close-btn:focus { color: black; }
 
-/* (Styling form tidak berubah) */
 #ship-form,
 #maintenance-form,
 #rest-form {
@@ -453,18 +434,16 @@ h2#report-subtitle {
 }
 .ship-main-title {
     display: block;
-    font-size: 1.5em; /* Sesuaikan jika perlu */
+    font-size: 1.5em; 
     color: #000;
 }
 .ship-sub-title {
     display: block;
-    font-size: 1.5em; /* Sesuaikan jika perlu */
+    font-size: 1.5em; 
     color: #000000;
     font-weight: bold;
 }
 
-/* --- STYLING UNTUK LEGENDA DI BAWAH --- */
-/* (Styling legenda tidak berubah) */
 .legends-scroll-container {
     overflow-x: auto;
     margin-top: 40px;
@@ -593,8 +572,6 @@ h2#report-subtitle {
     height: 100%;
 }
 
-/* --- Styling Communication Log Table --- */
-/* (Styling comm log tidak berubah) */
 .communication-log-container {
     flex-basis: 600px;
     min-width: 500px;
@@ -643,11 +620,9 @@ h2#report-subtitle {
     background-color: #f0f0f0;
 }
 
-/* Style Blok Maintenance & Istirahat */
-/* (Styling maintenance & rest block tidak berubah) */
 .maintenance-block {
     position: absolute;
-    z-index: 14; /* Naikkan sedikit di atas garis pembagi */
+    z-index: 14; 
     background-color: #eb975b;
     border: 1px solid #a67c00;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
@@ -689,9 +664,6 @@ h2#report-subtitle {
     background-color: rgba(255, 0, 0, 0.5);
 }
 
-
-/* Styling Grup Tombol Form & Tombol Hapus */
-/* (Styling form buttons tidak berubah) */
 .form-button-group {
     display: flex;
     flex-direction: row;
@@ -712,23 +684,12 @@ h2#report-subtitle {
     display: inline-flex;
 }
 
-/* Style untuk Garis Waktu yang Bisa Digeser */
-/* (Styling draggable-line tidak dipakai lagi, diganti #current-time-indicator) */
-/* .draggable-line { ... } */
-
-
-/* Style untuk Header PDF */
-/* (Styling .pdf-header, .pdf-logo, .pdf-title-container, dll. sudah diatur inline di HTML) */
 .pdf-header {
-    /* Pastikan gaya flexbox dari inline HTML tidak tertimpa */
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-
-/* Style untuk Dropdown PDF */
-/* (Styling dropdown tidak berubah) */
 .pdf-dropdown-container {
     position: relative;
     display: inline-block;
@@ -760,7 +721,6 @@ h2#report-subtitle {
     background-color: #ddd;
 }
 
-/* Class untuk menyembunyikan elemen saat PDF */
 .hide-for-pdf {
     display: none !important;
 }
