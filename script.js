@@ -1,0 +1,1054 @@
+// -- START KODE SCRIPT.JS --
+
+document.addEventListener('DOMContentLoaded', () => {
+    // KONFIGURASI DAN STATE APLIKASI
+    const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
+    const HOUR_WIDTH = 50;
+    const KD_HEIGHT_UNIT = 40; // Pastikan ini sama dengan variabel --kd-height di CSS jika Anda pakai
+    const KD_MIN = Math.min(...KD_MARKERS);
+    const PENDING_FORM_KEY = 'pendingShipForm';
+
+    let shipSchedules = JSON.parse(localStorage.getItem('shipSchedules')) || [];
+    let editingShipIndex = null;
+    let currentStartDate = getStartOfWeek(new Date());
+
+    let maintenanceSchedules = JSON.parse(localStorage.getItem('maintenanceSchedules')) || [];
+    let editingMaintenanceIndex = null;
+
+    let restSchedules = JSON.parse(localStorage.getItem('restSchedules')) || [];
+    let editingRestIndex = null;
+
+    // State untuk Garis Waktu (tidak dipakai lagi untuk elemen #draggable-line)
+    // let draggableLineLeft = JSON.parse(localStorage.getItem('draggableLinePosition')) || 200;
+
+    // REFERENSI ELEMEN DOM
+    const grid = document.getElementById('grid');
+    const yAxis = document.querySelector('.y-axis');
+    const xAxis = document.querySelector('.x-axis');
+    const hourAxis = document.getElementById('hour-axis');
+    const modal = document.getElementById('ship-modal');
+    const addShipBtn = document.getElementById('add-ship-btn');
+    const closeModalBtn = modal.querySelector('.close-btn');
+    const shipForm = document.getElementById('ship-form');
+    const modalTitle = document.getElementById('modal-title');
+    const formSubmitBtn = shipForm.querySelector('button[type="submit"]');
+    const prevWeekBtn = document.getElementById('prev-week-btn');
+    const nextWeekBtn = document.getElementById('next-week-btn');
+    const weekRangeDisplay = document.getElementById('week-range-display');
+    const clearDataBtn = document.getElementById('clear-data-btn');
+    const berthLabelsContainer = document.querySelector('.berth-labels-container');
+    const berthMapContainer = document.getElementById('berth-map-container');
+
+    // Referensi DOM untuk Maintenance
+    const addMaintenanceBtn = document.getElementById('add-maintenance-btn');
+    const maintenanceModal = document.getElementById('maintenance-modal');
+    const maintenanceCloseBtn = maintenanceModal.querySelector('.close-btn');
+    const maintenanceForm = document.getElementById('maintenance-form');
+    const maintenanceModalTitle = document.getElementById('maintenance-modal-title');
+    const maintenanceSubmitBtn = maintenanceForm.querySelector('button[type="submit"]');
+
+    // Referensi DOM untuk Istirahat
+    const addRestBtn = document.getElementById('add-rest-btn');
+    const restModal = document.getElementById('rest-modal');
+    const restCloseBtn = restModal.querySelector('.close-btn');
+    const restForm = document.getElementById('rest-form');
+    const restModalTitle = document.getElementById('rest-modal-title');
+    const restSubmitBtn = restForm.querySelector('button[type="submit"]');
+
+    // Referensi Tombol Hapus
+    const deleteShipBtn = document.getElementById('delete-ship-btn');
+    const deleteMaintenanceBtn = document.getElementById('delete-maintenance-btn');
+    const deleteRestBtn = document.getElementById('delete-rest-btn');
+
+     // Referensi untuk garis
+    const berthDividerLine = document.getElementById('berth-divider-line');
+    const currentTimeIndicator = document.getElementById('current-time-indicator');
+
+
+    // FUNGSI INTI APLIKASI
+    function renderShips() {
+        // Hapus kapal lama dari grid
+        grid.querySelectorAll('.ship-wrapper').forEach(el => el.remove());
+
+        const weekStart = new Date(currentStartDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+
+        const visibleShips = shipSchedules.filter(ship => {
+            // Validasi tanggal dasar sebelum konversi
+            if (!ship.etaTime || !ship.endTime) {
+                 console.warn("Skipping ship due to missing dates:", ship);
+                 return false;
+            }
+            const shipETA = new Date(ship.etaTime);
+            const shipETD = new Date(ship.endTime);
+            if (isNaN(shipETA) || isNaN(shipETD)) {
+                console.warn("Skipping ship due to invalid date format:", ship);
+                return false;
+            }
+            return shipETA < weekEnd && shipETD > weekStart;
+        });
+
+        visibleShips.forEach((ship) => {
+            const shipIndex = shipSchedules.indexOf(ship);
+            const eta = new Date(ship.etaTime);
+            const etb = new Date(ship.startTime);
+            const etc = ship.etcTime ? new Date(ship.etcTime) : null;
+            const etd = new Date(ship.endTime);
+
+             // Pengecekan tanggal lagi sebelum kalkulasi
+            if (isNaN(eta) || isNaN(etb) || isNaN(etd) || (etc && isNaN(etc)) ) {
+                console.warn("Skipping ship render due to invalid date after filter:", ship);
+                return; // Lewati kapal ini
+            }
+
+            const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
+            const left = getHoursSinceWeekStart(eta) * HOUR_WIDTH;
+            const width = Math.max(((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2); // Lebar minimum
+            const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
+            const top = (ship.berthLocation - KD_MIN) * kdUnitPx;
+             // Validasi tinggi agar tidak negatif atau terlalu kecil
+            const calculatedHeight = ship.length * kdUnitPx;
+            const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); // Tinggi minimum
+
+            const contentLeft = Math.max(((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, 0);
+            const contentWidth = Math.max(((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4); // Lebar konten minimum
+
+            // Validasi posisi top dan left agar tidak negatif
+            const finalTop = Math.max(top, 0);
+            const finalLeft = Math.max(left, 0);
+
+
+            const company = ship.company ? ship.company.toUpperCase() : 'UNKNOWN';
+            let logoUrl = '', companyColor = '#718096';
+            switch(company) {
+                case 'MERATUS': logoUrl = './MRTS.png'; companyColor = '#000000'; break;
+                case 'TANTO':   logoUrl = './TANTO.png'; companyColor = '#000000'; break;
+                case 'SPIL':    logoUrl = './SPIL.png'; companyColor = '#000000'; break;
+                case 'CTP':     logoUrl = './CTP.png'; companyColor = '#000000'; break;
+                case 'PPNP':    logoUrl = './PPNP.png'; companyColor = '#000000'; break;
+                case 'LINE':    logoUrl = './Lines.jpg'; companyColor = '#000000'; break;
+                case 'ICON':    logoUrl = './icon.jpg'; companyColor = '#000000'; break;
+            }
+            const statusColors = {
+                "VESSEL ALONGSIDE": "#00c853",
+                "VESSEL ON PLOTTING": "#ffff00",
+                "VESSEL ON PLANNING": "#bfbfbf",
+                "VESSEL DEPART": "#9c27b0",
+                "CRANE/BERTH MAINTENANCE": "#ffc000",
+            };
+            const footerColor = statusColors[ship.status] || '#718096';
+            const bodyTextLines = [
+                `${ship.length || '?'}m / ${ship.draft || '?'} / ${ship.destPort || '-'} `,
+                `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
+                `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etd)} / ${formatDateTime(etc)}`,
+                `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
+                `${ship.qccName || '?'} `,
+            ];
+            const bodyText = bodyTextLines.join('\n').trim();
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ship-wrapper';
+            wrapper.style.top = `${finalTop}px`;
+            wrapper.style.left = `${finalLeft}px`;
+            wrapper.style.width = `${width}px`;
+            wrapper.style.height = `${height}px`;
+            wrapper.innerHTML = `
+                <div class="ship-content" style="left: ${contentLeft}px; width: ${contentWidth}px; border-color: ${companyColor};">
+                    <div class="ship-header">
+                        <div class="ship-header-text">
+                            <span class="ship-main-title">${company} ${ship.shipName || 'N/A'}</span>
+                            <span class="ship-sub-title">${ship.code || 'N/A'}</span>
+                        </div>
+                        ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none'; console.warn('Gagal load logo kapal:', this.src)"/>` : ''}
+                    </div>
+                    <div class="ship-body">${bodyText}</div>
+                </div>
+                <div class="ship-footer" style="background-color: ${footerColor};">
+                    <span class="footer-left"></span>
+                    <span class="footer-center">${ship.status || 'N/A'}</span>
+                    <span class="footer-right">BSH: ${ship.bsh || ''} / ${ship.berthSide || ''}</span>
+                </div>
+            `;
+            wrapper.addEventListener('dblclick', () => editShip(shipIndex));
+            wrapper.title = 'Double click untuk mengedit';
+            grid.appendChild(wrapper); // Tambahkan kapal ke grid
+        });
+    }
+
+    function renderMaintenance() {
+        grid.querySelectorAll('.maintenance-block').forEach(el => el.remove());
+        const weekStart = new Date(currentStartDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
+        const visibleMaintenance = maintenanceSchedules.filter(item => {
+             if (!item.startTime || !item.endTime) return false;
+            const startTime = new Date(item.startTime);
+            const endTime = new Date(item.endTime);
+             if (isNaN(startTime) || isNaN(endTime)) return false;
+            return startTime < weekEnd && endTime > weekStart;
+        });
+        visibleMaintenance.forEach((item, index) => {
+            const itemIndex = maintenanceSchedules.indexOf(item);
+            const startTime = new Date(item.startTime);
+            const endTime = new Date(item.endTime);
+            const left = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
+            const width = Math.max(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2);
+
+            const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
+            const top = (item.startKd - KD_MIN) * kdUnitPx;
+
+            const maintenanceLength = Math.max((item.endKd - item.startKd), 10); // Panjang minimum
+            const height = Math.max(maintenanceLength * kdUnitPx, KD_HEIGHT_UNIT / 2); // Tinggi minimum
+
+            const finalTop = Math.max(top, 0);
+            const finalLeft = Math.max(left, 0);
+
+            const block = document.createElement('div');
+            block.className = 'maintenance-block';
+            block.style.top = `${finalTop}px`;
+            block.style.left = `${finalLeft}px`;
+            block.style.width = `${width}px`;
+            block.style.height = `${height}px`;
+            block.textContent = item.keterangan;
+            block.title = `Maintenance: ${item.keterangan} (Double click untuk mengedit)`;
+            block.addEventListener('dblclick', () => editMaintenance(itemIndex));
+            grid.appendChild(block);
+        });
+    }
+
+    function renderRestTimes() {
+        grid.querySelectorAll('.rest-block').forEach(el => el.remove());
+        const weekStart = new Date(currentStartDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
+        const visibleRestTimes = restSchedules.filter(item => {
+             if (!item.startTime || !item.endTime) return false;
+            const startTime = new Date(item.startTime);
+            const endTime = new Date(item.endTime);
+             if (isNaN(startTime) || isNaN(endTime)) return false;
+            return startTime < weekEnd && endTime > weekStart;
+        });
+        visibleRestTimes.forEach(item => {
+            const itemIndex = restSchedules.indexOf(item);
+            const startTime = new Date(item.startTime);
+            const endTime = new Date(item.endTime);
+            const left = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
+            const width = Math.max(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4);
+
+             const finalLeft = Math.max(left, 0);
+
+            const block = document.createElement('div');
+            block.className = 'rest-block';
+            block.style.top = '0px';
+            block.style.height = grid.style.height; // Sesuaikan tinggi dengan grid
+            block.style.left = `${finalLeft}px`;
+            block.style.width = `${width}px`;
+            block.textContent = item.keterangan || 'ISTIRAHAT';
+            block.title = `${item.keterangan} (Double click untuk mengedit)`;
+            block.addEventListener('dblclick', () => editRestTime(itemIndex));
+            grid.appendChild(block);
+        });
+    }
+
+    // (Fungsi saveCommLog, loadCommLog tidak berubah)
+    function saveCommLog() {
+        const table = document.getElementById('comm-log-table');
+        const rows = table.querySelectorAll('tbody tr');
+        const data = [];
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td[contenteditable="true"]');
+            if (cells.length === 6) {
+                const rowData = {
+                    dateTime: cells[0].textContent,
+                    petugas: cells[1].textContent,
+                    stakeholder: cells[2].textContent,
+                    pic: cells[3].textContent,
+                    remark: cells[4].textContent,
+                    commChannel: cells[5].textContent,
+                };
+                data.push(rowData);
+            }
+        });
+
+        localStorage.setItem('communicationLogData', JSON.stringify(data));
+    }
+    function loadCommLog() {
+        const data = JSON.parse(localStorage.getItem('communicationLogData'));
+        if (!data) return;
+
+        const table = document.getElementById('comm-log-table');
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach((row, index) => {
+            if (!data[index]) return;
+
+            const cells = row.querySelectorAll('td[contenteditable="true"]');
+            if (cells.length === 6) {
+                cells[0].textContent = data[index].dateTime;
+                cells[1].textContent = data[index].petugas;
+                cells[2].textContent = data[index].stakeholder;
+                cells[3].textContent = data[index].pic;
+                cells[4].textContent = data[index].remark;
+                cells[5].textContent = data[index].commChannel;
+            }
+        });
+    }
+
+
+    // (Fungsi savePendingForm, loadPendingForm, clearPendingForm tidak berubah)
+     function savePendingForm() {
+        if (editingShipIndex === null) {
+            const formData = new FormData(shipForm);
+            const data = Object.fromEntries(formData.entries());
+            sessionStorage.setItem(PENDING_FORM_KEY, JSON.stringify(data));
+        }
+    }
+    function loadPendingForm() {
+        const data = JSON.parse(sessionStorage.getItem(PENDING_FORM_KEY));
+        if (data) {
+            for (const key in data) {
+                if (shipForm.elements[key]) {
+                    shipForm.elements[key].value = data[key];
+                }
+            }
+        }
+    }
+    function clearPendingForm() {
+        sessionStorage.removeItem(PENDING_FORM_KEY);
+        shipForm.reset();
+    }
+
+    // (Fungsi Helper Waktu tidak berubah)
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+    function formatDate(date) {
+        return new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    function formatDateTime(date) {
+        if (!date || isNaN(new Date(date))) return '-';
+        const d = new Date(date);
+        const day = d.getDate().toString();
+        const hour = d.getHours().toString().padStart(2, '0');
+        const minute = d.getMinutes().toString().padStart(2, '0');
+        const timeString = hour + minute;
+        return `${day} / ${timeString}`;
+    }
+    function formatForInput(date) {
+        if (!date) return '';
+        try {
+            const d = new Date(date);
+            if (isNaN(d)) return '';
+            const pad = (num) => num.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        } catch (e) {
+            console.error("Error formatting date for input:", date, e);
+            return '';
+        }
+    }
+    function formatDateForPDF(d) {
+        return d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+
+    // Fungsi Inisialisasi
+    function initialize() {
+        updateDisplay(); // Panggil updateDisplay yang akan memanggil drawGrid
+        setupEventListeners();
+        loadCommLog();
+         // Update garis waktu setiap menit
+        setInterval(updateCurrentTimeIndicator, 60 * 1000);
+    }
+
+    // Fungsi Menggambar Grid (Diperbarui Total)
+    function drawGrid() {
+        yAxis.innerHTML = '';
+        xAxis.innerHTML = '';
+        hourAxis.innerHTML = '';
+        berthLabelsContainer.innerHTML = '';
+        grid.innerHTML = ''; // Hapus semua isi grid lama (termasuk sel, divider, time indicator)
+
+        const oldSeparator = berthMapContainer.querySelector('.berth-separator');
+        if (oldSeparator) oldSeparator.remove(); // Hapus separator lama dari container map
+
+        const totalHours = 24 * 7; // Total jam dalam seminggu
+        const totalKdSteps = KD_MARKERS.length; // Jumlah baris KD
+
+        // 1. Setup Grid Container
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = `repeat(${totalHours}, ${HOUR_WIDTH}px)`;
+        // Baris dibuat sejumlah KD_MARKERS
+        grid.style.gridTemplateRows = `repeat(${totalKdSteps -1}, ${KD_HEIGHT_UNIT}px)`; // -1 karena KD_MARKERS punya satu lebih banyak
+        grid.style.width = `${totalHours * HOUR_WIDTH}px`; // Lebar total grid
+        grid.style.height = `${(totalKdSteps - 1) * KD_HEIGHT_UNIT}px`; // Tinggi total grid
+
+        // 2. Buat Sel Grid
+        for (let row = 0; row < totalKdSteps -1; row++) {
+            for (let col = 0; col < totalHours; col++) {
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell');
+                // Tambahkan style inline jika perlu untuk border spesifik
+                // cell.style.gridColumnStart = col + 1;
+                // cell.style.gridRowStart = row + 1;
+                grid.appendChild(cell);
+            }
+        }
+
+        // 3. Tambahkan kembali elemen garis divider dan time indicator ke dalam grid
+        const divider = document.createElement('div');
+        divider.id = 'berth-divider-line';
+        grid.appendChild(divider);
+
+        const timeIndicator = document.createElement('div');
+        timeIndicator.id = 'current-time-indicator';
+        grid.appendChild(timeIndicator);
+
+
+        // 4. Gambar Sumbu Y (KD Labels)
+        const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); // Hitung ulang di sini jika perlu
+        KD_MARKERS.forEach(kd => {
+            const label = document.createElement('div');
+            label.className = 'kd-label';
+            if (kd === 490) label.classList.add('bold');
+            label.textContent = kd;
+            label.style.height = `${KD_HEIGHT_UNIT}px`;
+            yAxis.appendChild(label);
+        });
+
+        // 5. Gambar Label Berth (Berth 1, Berth 2)
+        const berths = [{ name: 'BERTH 2', startKd: 380, endKd: 490 },{ name: 'BERTH 1', startKd: 490, endKd: 600 }];
+        berths.forEach(berth => {
+            const berthLabelContainer = document.createElement('div');
+            berthLabelContainer.className = 'berth-label-container';
+            const berthLabel = document.createElement('div');
+            berthLabel.className = 'berth-label';
+            berthLabel.textContent = berth.name;
+            // Hitung posisi top dan height berdasarkan KD_MIN dan kdUnitPx
+            const top = (berth.startKd - KD_MIN) * kdUnitPx;
+            const height = (berth.endKd - berth.startKd) * kdUnitPx;
+            berthLabelContainer.style.top = `${top}px`;
+            berthLabelContainer.style.height = `${height}px`;
+            berthLabelContainer.appendChild(berthLabel);
+            berthLabelsContainer.appendChild(berthLabelContainer);
+        });
+
+
+        // 6. Gambar Sumbu X (Hari dan Jam)
+        const currentDay = new Date(currentStartDate);
+        for (let i = 0; i < 7; i++) {
+            const dayLabel = document.createElement('div');
+            dayLabel.className = 'day-label';
+            dayLabel.textContent = currentDay.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long' });
+            dayLabel.style.width = `${24 * HOUR_WIDTH}px`;
+            xAxis.appendChild(dayLabel);
+
+            for (let h = 0; h < 24; h += 2) { // Loop jam per hari
+                const hourLabel = document.createElement('div');
+                hourLabel.className = 'hour-label';
+                hourLabel.textContent = h.toString().padStart(2, '0');
+                hourLabel.style.width = `${2 * HOUR_WIDTH}px`; // Lebar untuk 2 jam
+                hourAxis.appendChild(hourLabel);
+            }
+            currentDay.setDate(currentDay.getDate() + 1);
+        }
+
+        // 7. Update posisi garis divider dan time indicator setelah grid digambar
+        updateBerthDividerPosition();
+        updateCurrentTimeIndicator();
+    }
+
+
+    // Fungsi untuk menghitung dan set posisi garis pembagi berth
+    function updateBerthDividerPosition() {
+        const divider = document.getElementById('berth-divider-line');
+        if (divider) {
+             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
+             // Posisi KD 490
+             const topPosition = (490 - KD_MIN) * kdUnitPx;
+             divider.style.top = `${topPosition -1}px`; // Kurangi 1px agar pas di garis
+             // Pastikan style lain sudah ada di CSS
+        }
+    }
+
+    // Fungsi untuk memperbarui posisi garis merah (current time indicator)
+    function updateCurrentTimeIndicator() {
+        const timeIndicator = document.getElementById('current-time-indicator');
+        if (timeIndicator) {
+            const now = new Date();
+            // Gunakan currentStartDate sebagai referensi awal minggu
+            const startOfWeek = new Date(currentStartDate);
+            startOfWeek.setHours(0, 0, 0, 0); // Pastikan mulai dari jam 00:00
+
+            const msSinceWeekStart = now.getTime() - startOfWeek.getTime();
+            // Hanya tampilkan jika waktu sekarang berada dalam minggu yang ditampilkan
+            if (msSinceWeekStart >= 0 && msSinceWeekStart < 7 * 24 * 60 * 60 * 1000) {
+                 const hoursSinceWeekStart = msSinceWeekStart / (1000 * 60 * 60);
+                 const leftPosition = hoursSinceWeekStart * HOUR_WIDTH;
+                 timeIndicator.style.left = `${leftPosition}px`;
+                 timeIndicator.style.display = 'block'; // Tampilkan garis
+            } else {
+                 timeIndicator.style.display = 'none'; // Sembunyikan jika di luar minggu
+            }
+        }
+    }
+
+
+    // (Fungsi makeLineDraggable tidak diperlukan lagi jika garis merah tidak bisa digeser)
+
+
+    // Fungsi Update Tampilan
+    function updateDisplay() {
+        const endDate = new Date(currentStartDate);
+        endDate.setDate(endDate.getDate() + 6);
+        weekRangeDisplay.textContent = `${formatDate(currentStartDate)} - ${formatDate(endDate)}`;
+        drawGrid(); // Menggambar grid, sumbu, dan garis
+        // Render item di atas grid
+        renderRestTimes();
+        renderMaintenance();
+        renderShips();
+    }
+
+    // (Fungsi Edit Kapal, Maintenance, Istirahat tidak berubah)
+    function fillFormForEdit(ship) {
+        document.getElementById('ship-company').value = ship.company;
+        document.getElementById('ship-name').value = ship.shipName;
+        document.getElementById('ship-code').value = ship.code;
+        document.getElementById('ship-length').value = ship.length;
+        document.getElementById('ship-draft').value = ship.draft;
+        document.getElementById('dest-port').value = ship.destPort || '';
+        document.getElementById('berth-location').value = ship.berthLocation;
+        document.getElementById('n-kd').value = ship.nKd || '';
+        document.getElementById('min-kd').value = ship.minKd || '';
+        document.getElementById('load-value').value = ship.loadValue || 0;
+        document.getElementById('discharge-value').value = ship.dischargeValue || 0;
+        document.getElementById('eta-time').value = formatForInput(ship.etaTime);
+        document.getElementById('start-time').value = formatForInput(ship.startTime);
+        document.getElementById('etc-time').value = formatForInput(ship.etcTime);
+        document.getElementById('end-time').value = formatForInput(ship.endTime);
+        document.getElementById('ship-status').value = ship.status;
+        document.getElementById('ship-berth-side').value = ship.berthSide;
+        document.getElementById('ship-bsh').value = ship.bsh || '';
+        document.getElementById('qcc-name').value = ship.qccName || '';
+    }
+    function editShip(index) {
+        editingShipIndex = index;
+        fillFormForEdit(shipSchedules[index]);
+        modalTitle.textContent = 'Edit Jadwal Kapal';
+        formSubmitBtn.textContent = 'Update Jadwal';
+        shipForm.classList.add('edit-mode');
+        deleteShipBtn.onclick = () => {
+            if (confirm('Anda yakin ingin menghapus jadwal kapal ini?')) {
+                shipSchedules.splice(editingShipIndex, 1);
+                localStorage.setItem('shipSchedules', JSON.stringify(shipSchedules));
+                updateDisplay();
+                modal.style.display = 'none';
+                shipForm.classList.remove('edit-mode');
+            }
+        };
+        modal.style.display = 'block';
+    }
+    function editMaintenance(index) {
+        editingMaintenanceIndex = index;
+        const item = maintenanceSchedules[index];
+        maintenanceForm.elements['startKd'].value = item.startKd;
+        maintenanceForm.elements['endKd'].value = item.endKd;
+        maintenanceForm.elements['startTime'].value = formatForInput(item.startTime);
+        maintenanceForm.elements['endTime'].value = formatForInput(item.endTime);
+        maintenanceForm.elements['keterangan'].value = item.keterangan;
+        maintenanceModalTitle.textContent = 'Edit Maintenance';
+        maintenanceSubmitBtn.textContent = 'Update';
+        maintenanceForm.classList.add('edit-mode');
+        deleteMaintenanceBtn.onclick = () => {
+            if (confirm('Anda yakin ingin menghapus data maintenance ini?')) {
+                maintenanceSchedules.splice(editingMaintenanceIndex, 1);
+                localStorage.setItem('maintenanceSchedules', JSON.stringify(maintenanceSchedules));
+                updateDisplay();
+                maintenanceModal.style.display = 'none';
+                maintenanceForm.classList.remove('edit-mode');
+            }
+        };
+        maintenanceModal.style.display = 'block';
+    }
+    function editRestTime(index) {
+        editingRestIndex = index;
+        const item = restSchedules[index];
+        restForm.elements['startTime'].value = formatForInput(item.startTime);
+        restForm.elements['endTime'].value = formatForInput(item.endTime);
+        restForm.elements['keterangan'].value = item.keterangan;
+        restModalTitle.textContent = 'Edit Waktu Istirahat';
+        restSubmitBtn.textContent = 'Update';
+        restForm.classList.add('edit-mode');
+        deleteRestBtn.onclick = () => {
+            if (confirm('Anda yakin ingin menghapus waktu istirahat ini?')) {
+                restSchedules.splice(editingRestIndex, 1);
+                localStorage.setItem('restSchedules', JSON.stringify(restSchedules));
+                updateDisplay();
+                restModal.style.display = 'none';
+                restForm.classList.remove('edit-mode');
+            }
+        };
+        restModal.style.display = 'block';
+    }
+
+
+    // Fungsi Ekspor PDF (versi terakhir, pastikan useCORS: true)
+    async function exportToPDF(type = 'weekly') {
+        console.log(`[PDF Export] Starting export process for type: ${type}`);
+        const { jsPDF } = window.jspdf;
+
+        // --- 1. Referensi Elemen ---
+        const pdfHeader = document.getElementById('pdf-header');
+        const pelindoLogoInHeader = pdfHeader.querySelector('.pdf-logo');
+        const mainHeader = document.querySelector('.main-header');
+        const berthMapContainer = document.getElementById('berth-map-container');
+        const legendsScrollContainer = document.querySelector('.legends-scroll-container');
+        // const draggableLine = document.getElementById('draggable-line'); // Tidak dipakai lagi
+        const currentTimeIndicatorPDF = document.getElementById('current-time-indicator'); // Ambil garis merah
+        const berthDividerLinePDF = document.getElementById('berth-divider-line'); // Ambil garis hitam
+        const exportBtn = document.getElementById('export-pdf-btn');
+        const pdfOptions = document.getElementById('pdf-options');
+        const gridScroll = document.querySelector('.grid-scroll-container');
+
+        // Elemen untuk kalkulasi
+        const yAxisColumn = document.querySelector('.y-axis-column');
+        const gridContainer = document.querySelector('.grid-container');
+        const legendsWrapper = document.querySelector('.bottom-legends-wrapper');
+
+        if (!pelindoLogoInHeader) {
+            console.error("[PDF Export] ERROR: Elemen logo Pelindo (.pdf-logo) tidak ditemukan di dalam #pdf-header!");
+            alert("Error: Elemen logo Pelindo tidak ditemukan. Periksa struktur HTML Anda di bagian <div id='pdf-header'>.");
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
+            return;
+        } else {
+             console.log("[PDF Export] Elemen logo Pelindo ditemukan.");
+             console.log("[PDF Export] Path src logo Pelindo:", pelindoLogoInHeader.src);
+        }
+
+        const originalBtnHTML = exportBtn.innerHTML;
+        exportBtn.disabled = true;
+        exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengekspor...';
+        pdfOptions.style.display = 'none';
+
+        if (pelindoLogoInHeader) {
+            console.log("[PDF Export] Setting crossOrigin='anonymous' for Pelindo logo.");
+            pelindoLogoInHeader.crossOrigin = "anonymous";
+        }
+
+        // if (draggableLine) draggableLine.style.display = 'none'; // Tidak relevan lagi
+        mainHeader.classList.add('hide-for-pdf'); // Sembunyikan header utama aplikasi
+
+        // Simpan style asli
+        const oldHeaderWidth = pdfHeader.style.width;
+        const oldMapWidth = berthMapContainer.style.width;
+        const oldLegendsWidth = legendsScrollContainer.style.width;
+        const oldGridScrollOverflow = gridScroll.style.overflowX;
+        const oldGridScrollLeft = gridScroll.scrollLeft;
+        const oldLegendsScrollLeft = legendsScrollContainer.scrollLeft;
+        // Simpan display asli garis
+        const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
+        const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block'; // Asumsikan divider selalu ada
+
+        let targetScrollLeft = 0;
+
+        try {
+            // --- 2. Tentukan Rentang & Nama File ---
+            let pdfFileName, pdfDateRangeStr;
+            let captureWidth;
+            let captureStartX = 0;
+
+            const mapFullWidth = gridContainer.scrollWidth + yAxisColumn.offsetWidth;
+            const legendsFullWidth = legendsWrapper.scrollWidth;
+            const fullWidth = Math.max(mapFullWidth, legendsFullWidth);
+
+            const hourWidth = HOUR_WIDTH; // Ambil dari konstanta
+            const dayWidth = 24 * hourWidth;
+            const yAxisWidth = yAxisColumn.offsetWidth;
+
+            if (type === 'daily') {
+                console.log("[PDF Export] Preparing for daily export...");
+                let today = new Date(); today.setHours(0,0,0,0);
+                let tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+                pdfDateRangeStr = `${formatDateForPDF(today)} to ${formatDateForPDF(tomorrow)}`;
+                pdfFileName = `Berth-Allocation-Harian-${today.toISOString().split('T')[0]}.pdf`;
+
+                let weekStart = new Date(currentStartDate); weekStart.setHours(0,0,0,0);
+                let dayDiff = Math.round((today.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+                console.log(`[PDF Export] Day difference from week start: ${dayDiff}`);
+
+                if (dayDiff < 0 || dayDiff >= 7) {
+                    alert('Tanggal "Hari Ini" tidak ada di minggu yang sedang ditampilkan. Silakan navigasi ke minggu yang benar.');
+                    throw new Error('Daily export failed: Date not in view.');
+                }
+
+                captureWidth = yAxisWidth + (2 * dayWidth);
+                targetScrollLeft = dayDiff * dayWidth;
+                captureStartX = targetScrollLeft;
+                console.log(`[PDF Export] Daily - captureWidth: ${captureWidth}px, targetScrollLeft: ${targetScrollLeft}px, captureStartX: ${captureStartX}px`);
+
+                gridScroll.style.overflowX = 'hidden';
+                gridScroll.scrollLeft = targetScrollLeft;
+                legendsScrollContainer.scrollLeft = targetScrollLeft;
+
+            } else { // weekly
+                console.log("[PDF Export] Preparing for weekly export...");
+                pdfDateRangeStr = weekRangeDisplay.textContent;
+                pdfFileName = `Berth-Allocation-Mingguan-${pdfDateRangeStr.replace(/[\s/]/g, '')}.pdf`;
+                captureWidth = fullWidth;
+                captureStartX = 0;
+                targetScrollLeft = 0;
+                console.log(`[PDF Export] Weekly - captureWidth: ${captureWidth}px`);
+                gridScroll.style.overflowX = 'visible';
+                gridScroll.scrollLeft = 0;
+                legendsScrollContainer.scrollLeft = 0;
+            }
+
+            // --- 3. Siapkan DOM & Tangkap Canvas (DENGAN JEDA) ---
+            pdfHeader.style.width = `${captureWidth}px`;
+            berthMapContainer.style.width = `${captureWidth}px`;
+            legendsScrollContainer.style.width = `${captureWidth}px`;
+            pdfHeader.querySelector('.pdf-date-range').textContent = pdfDateRangeStr;
+            pdfHeader.style.display = 'flex'; // Tampilkan header
+            // Pastikan garis terlihat sebelum capture
+            if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
+            updateCurrentTimeIndicator(); // Update posisi & pastikan display: block jika dalam range
+
+            await new Promise(resolve => setTimeout(resolve, 300)); // Jeda
+            console.log("[PDF Export] Delay finished. Starting canvas capture...");
+
+            const logoStyles = window.getComputedStyle(pelindoLogoInHeader);
+            console.log("[PDF Export] Logo computed display:", logoStyles.display, "visibility:", logoStyles.visibility);
+            if (logoStyles.display === 'none' || logoStyles.visibility === 'hidden') {
+                 console.warn("[PDF Export] WARNING: Logo might be hidden!");
+            }
+
+
+            const scale = 2;
+            const commonOptions = {
+                scale: scale,
+                useCORS: true,
+                y: 0,
+                scrollY: 0,
+                windowWidth: captureWidth
+            };
+
+             // Opsi untuk Berth Map Container (termasuk Y-Axis dan Grid Scroll)
+            const optionsBerthMap = {
+                ...commonOptions,
+                width: captureWidth, // Lebar sesuai tipe (daily/weekly)
+                height: berthMapContainer.scrollHeight,
+                x: 0, // Selalu mulai dari 0 karena container utama
+                scrollX: (type === 'daily' ? targetScrollLeft : 0), // Beritahu scroll X
+            };
+
+            const optionsLegends = {
+                ...commonOptions,
+                 width: captureWidth, // Lebar sesuai tipe
+                 height: legendsScrollContainer.scrollHeight,
+                 x: 0, // Selalu mulai dari 0
+                 scrollX: (type === 'daily' ? targetScrollLeft : 0) // Beritahu scroll X
+            };
+            const optionsHeader = { ...commonOptions, width: captureWidth, height: pdfHeader.offsetHeight, x:0 };
+
+            console.log("[PDF Export] Capturing header...");
+            const canvasHeader = await html2canvas(pdfHeader, optionsHeader);
+            console.log("[PDF Export] Header captured. Capturing Berth Map Container...");
+            // Tangkap seluruh berth map container sekali jalan
+            const canvasMapCombined = await html2canvas(berthMapContainer, optionsBerthMap);
+            console.log("[PDF Export] Berth Map Container captured. Capturing Legends...");
+            const canvasLegends = await html2canvas(legendsScrollContainer, optionsLegends);
+            console.log("[PDF Export] Legends captured.");
+
+            // --- 4. Gabungkan di jsPDF ---
+            console.log("[PDF Export] Combining canvases into PDF...");
+
+            const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
+            const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; // Gunakan lebar map sbg referensi
+            const totalPdfHeightMM = canvases.reduce((sum, c) => sum + (c.height / scale / 96) * 25.4, 0);
+
+            const doc = new jsPDF({
+                orientation: pdfWidthMM > totalPdfHeightMM ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: [pdfWidthMM, totalPdfHeightMM]
+            });
+
+            let yOffset = 0;
+            for (const canvas of canvases) {
+                const imgData = canvas.toDataURL('image/png');
+                const imgHeightMM = (canvas.height / scale / 96) * 25.4;
+                const imgWidthMM = (canvas.width / scale / 96) * 25.4;
+                doc.addImage(imgData, 'PNG', 0, yOffset, imgWidthMM, imgHeightMM);
+                yOffset += imgHeightMM;
+            }
+
+            console.log("[PDF Export] Saving PDF...");
+            doc.save(pdfFileName);
+            console.log("[PDF Export] PDF saved successfully.");
+
+        } catch (error) {
+            console.error("[PDF Export] Error during export:", error);
+            if (error.message.indexOf('Daily export failed') === -1) {
+                 alert("Maaf, terjadi kesalahan saat membuat file PDF. Cek console (F12) untuk detail error.");
+            }
+        } finally {
+            console.log("[PDF Export] Cleaning up...");
+            // --- 5. Cleanup ---
+            mainHeader.classList.remove('hide-for-pdf');
+
+            // Kembalikan style asli
+            pdfHeader.style.display = 'none'; // Sembunyikan lagi header PDF
+            pdfHeader.style.width = oldHeaderWidth;
+            berthMapContainer.style.width = oldMapWidth;
+            legendsScrollContainer.style.width = oldLegendsWidth;
+            gridScroll.style.overflowX = oldGridScrollOverflow;
+            gridScroll.scrollLeft = oldGridScrollLeft;
+            legendsScrollContainer.scrollLeft = oldLegendsScrollLeft;
+            // Kembalikan display garis
+            if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = oldTimeIndicatorDisplay;
+            if(berthDividerLinePDF) berthDividerLinePDF.style.display = oldDividerDisplay;
+
+
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = originalBtnHTML;
+            console.log("[PDF Export] Cleanup finished.");
+        }
+    }
+
+
+    // Fungsi Setup Event Listener
+    function setupEventListeners() {
+        prevWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() - 7); updateDisplay(); });
+        nextWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() + 7); updateDisplay(); });
+
+        // --- Event Listener Kapal ---
+        addShipBtn.addEventListener('click', () => {
+            editingShipIndex = null;
+            shipForm.reset();
+            loadPendingForm();
+            modalTitle.textContent = 'Tambah Jadwal Kapal';
+            formSubmitBtn.textContent = 'Submit';
+            shipForm.classList.remove('edit-mode');
+            deleteShipBtn.onclick = null;
+            modal.style.display = 'block';
+        });
+        closeModalBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            shipForm.classList.remove('edit-mode');
+        });
+
+        // Referensi untuk dropdown PDF
+        const pdfDropdownBtn = document.getElementById('export-pdf-btn');
+        const pdfOptionsContainer = document.getElementById('pdf-options');
+        const pdfOptionBtns = document.querySelectorAll('.pdf-option-btn');
+
+        window.addEventListener('click', (event) => {
+            // Logika modal
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                shipForm.classList.remove('edit-mode');
+            }
+            if (event.target == maintenanceModal) {
+                maintenanceModal.style.display = 'none';
+                maintenanceForm.classList.remove('edit-mode');
+            }
+            if (event.target == restModal) {
+                restModal.style.display = 'none';
+                restForm.classList.remove('edit-mode');
+            }
+
+            // Logika untuk menutup dropdown PDF
+            if (pdfOptionsContainer.style.display === 'block' && !pdfDropdownBtn.contains(event.target)) {
+                pdfOptionsContainer.style.display = 'none';
+            }
+        });
+
+        shipForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const etaTime = shipForm.elements['etaTime'].value;
+            const startTime = shipForm.elements['startTime'].value;
+            const etcTime = shipForm.elements['etcTime'].value;
+            const endTime = shipForm.elements['endTime'].value;
+            if (!etaTime || !startTime || !etcTime || !endTime) {
+                alert("Harap isi semua field waktu (ETA, ETB, ETC, ETD).");
+                return;
+            }
+            if (new Date(startTime) < new Date(etaTime)) {
+                alert("Waktu Sandar (ETB) tidak boleh sebelum Waktu Tiba (ETA).");
+                return;
+            }
+            if (new Date(endTime) <= new Date(startTime)) {
+                alert("Waktu Berangkat (ETD) harus setelah Waktu Sandar (ETB).");
+                return;
+            }
+            const formData = new FormData(shipForm);
+            const shipData = Object.fromEntries(formData.entries());
+            shipData.length = parseInt(shipData.length, 10);
+            shipData.draft = parseFloat(shipData.draft);
+            shipData.berthLocation = parseInt(shipData.berthLocation, 10);
+            shipData.nKd = parseInt(shipData.nKd, 10);
+            shipData.minKd = parseInt(shipData.minKd, 10);
+            shipData.bsh = parseInt(shipData.bsh, 10) || null;
+            shipData.loadValue = parseInt(shipData.loadValue, 10) || 0;
+            shipData.dischargeValue = parseInt(shipData.dischargeValue, 10) || 0;
+            if (editingShipIndex !== null) {
+                shipSchedules[editingShipIndex] = shipData;
+            } else {
+                shipSchedules.push(shipData);
+            }
+            localStorage.setItem('shipSchedules', JSON.stringify(shipSchedules));
+            updateDisplay();
+            modal.style.display = 'none';
+            shipForm.classList.remove('edit-mode');
+            clearPendingForm();
+        });
+
+        Array.from(shipForm.elements).forEach(input => {
+            input.addEventListener('input', savePendingForm);
+        });
+
+        // --- Event Listener Maintenance ---
+        addMaintenanceBtn.addEventListener('click', () => {
+            editingMaintenanceIndex = null;
+            maintenanceForm.reset();
+            maintenanceModalTitle.textContent = 'Tambah Maintenance';
+            maintenanceSubmitBtn.textContent = 'Submit';
+            maintenanceForm.classList.remove('edit-mode');
+            deleteMaintenanceBtn.onclick = null;
+            maintenanceModal.style.display = 'block';
+        });
+        maintenanceCloseBtn.addEventListener('click', () => {
+            maintenanceModal.style.display = 'none';
+            maintenanceForm.classList.remove('edit-mode');
+        });
+        maintenanceForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const startTime = maintenanceForm.elements['startTime'].value;
+            const endTime = maintenanceForm.elements['endTime'].value;
+            if (new Date(endTime) <= new Date(startTime)) {
+                alert("Waktu Selesai harus setelah Waktu Mulai.");
+                return;
+            }
+
+            const formData = new FormData(maintenanceForm);
+            const data = Object.fromEntries(formData.entries());
+            data.startKd = parseInt(data.startKd, 10);
+            data.endKd = parseInt(data.endKd, 10); // Simpan End KD
+
+            // Validasi End KD
+            if (data.endKd <= data.startKd) {
+                alert("End KD harus lebih besar dari Start KD.");
+                return;
+            }
+
+            if (editingMaintenanceIndex !== null) {
+                maintenanceSchedules[editingMaintenanceIndex] = data;
+            } else {
+                maintenanceSchedules.push(data);
+            }
+            localStorage.setItem('maintenanceSchedules', JSON.stringify(maintenanceSchedules));
+            updateDisplay();
+            maintenanceModal.style.display = 'none';
+            maintenanceForm.classList.remove('edit-mode');
+        });
+
+        // --- Event Listener Istirahat ---
+        addRestBtn.addEventListener('click', () => {
+            editingRestIndex = null;
+            restForm.reset();
+            restModalTitle.textContent = 'Tambah Waktu Istirahat';
+            restSubmitBtn.textContent = 'Submit';
+            restForm.classList.remove('edit-mode');
+            deleteRestBtn.onclick = null;
+            restModal.style.display = 'block';
+        });
+        restCloseBtn.addEventListener('click', () => {
+            restModal.style.display = 'none';
+            restForm.classList.remove('edit-mode');
+        });
+        restForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const startTime = restForm.elements['startTime'].value;
+            const endTime = restForm.elements['endTime'].value;
+            if (new Date(endTime) <= new Date(startTime)) {
+                alert("Waktu Selesai harus setelah Waktu Mulai.");
+                return;
+            }
+            const formData = new FormData(restForm);
+            const data = Object.fromEntries(formData.entries());
+            if (editingRestIndex !== null) {
+                restSchedules[editingRestIndex] = data;
+            } else {
+                restSchedules.push(data);
+            }
+            localStorage.setItem('restSchedules', JSON.stringify(restSchedules));
+            updateDisplay();
+            restModal.style.display = 'none';
+            restForm.classList.remove('edit-mode');
+        });
+
+        // --- Event Listener Communication Log ---
+        const commLogCells = document.querySelectorAll('#comm-log-table td[contenteditable="true"]');
+        commLogCells.forEach(cell => {
+            cell.addEventListener('input', saveCommLog);
+        });
+
+        // --- Event Listener Lainnya ---
+        if (clearDataBtn) {
+            clearDataBtn.addEventListener('click', () => {
+                if (confirm('Anda yakin ingin menghapus SEMUA data jadwal kapal, maintenance, istirahat, DAN communication log?')) {
+                    shipSchedules = [];
+                    maintenanceSchedules = [];
+                    restSchedules = [];
+
+                    localStorage.removeItem('shipSchedules');
+                    localStorage.removeItem('maintenanceSchedules');
+                    localStorage.removeItem('restSchedules');
+                    localStorage.removeItem('communicationLogData');
+                    localStorage.removeItem('draggableLinePosition'); // Hapus data garis
+
+                    clearPendingForm();
+
+                    document.querySelectorAll('#comm-log-table tbody tr').forEach(row => {
+                        const cells = row.querySelectorAll('td[contenteditable="true"]');
+                        cells.forEach((cell, index) => {
+                            if (index === cells.length - 1) {
+                                cell.textContent = 'WAG';
+                            } else {
+                                cell.textContent = '';
+                            }
+                        });
+                    });
+
+                    // draggableLineLeft = 200; // Tidak dipakai lagi
+                    updateDisplay();
+                }
+            });
+        }
+
+        // Event Listener untuk Dropdown PDF
+        pdfDropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Hentikan event agar tidak ditangkap window
+            const isVisible = pdfOptionsContainer.style.display === 'block';
+            pdfOptionsContainer.style.display = isVisible ? 'none' : 'block';
+        });
+
+        pdfOptionBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const type = e.target.dataset.type; // 'weekly' or 'daily'
+                exportToPDF(type); // Panggil fungsi ekspor dengan tipe
+            });
+        });
+    } // Akhir dari setupEventListeners
+
+    // Mulai aplikasi
+    initialize();
+
+}); // Akhir dari DOMContentLoaded
+
+// -- END KODE SCRIPT.JS --
