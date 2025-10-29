@@ -253,7 +253,7 @@ h2#report-subtitle {
     border-left: 1px solid #9b2c2c; 
     border-right: 1px solid #9b2c2c; 
     cursor: ew-resize; 
-    z-index: 20; 
+    z-index: 1; 
     box-shadow: 0 0 5px rgba(0,0,0,0.3); 
     display: block;
 }
@@ -723,4 +723,5 @@ h2#report-subtitle {
 .hide-for-pdf {
     display: none !important;
 }
+
 
