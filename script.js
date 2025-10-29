@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             block.style.height = grid.style.height; // Sesuaikan tinggi dengan grid
             block.style.left = `${finalLeft}px`;
             block.style.width = `${width}px`;
-            block.textContent = item.keterangan || 'ISTIRAHAT';
+            block.textContent = item.keterangan || 'BREAK';
             block.title = `${item.keterangan} (Double click untuk mengedit)`;
             block.addEventListener('dblclick', () => editRestTime(itemIndex));
             grid.appendChild(block);
@@ -1010,3 +1010,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
 }); 
+
