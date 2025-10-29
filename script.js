@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const bodyTextLines = [
                 `${ship.length || '?'}m / ${ship.draft || '?'} / ${ship.destPort || '-'} `,
                 `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
-                `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etd)} / ${formatDateTime(etc)}`,
+                `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etc)} / ${formatDateTime(etd)}`,
                 `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
                 `${ship.qccName || '?'} `,
             ];
@@ -1010,4 +1010,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
 }); 
+
 
