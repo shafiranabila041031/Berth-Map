@@ -307,7 +307,7 @@ h2#report-subtitle {
     position: absolute;
     top: 2px;
     right: 3px;
-    height: 60px;
+    height: 20px;
     width: auto;
     object-fit: contain;
     background-color: rgba(255,255,255,0.7);
@@ -337,9 +337,9 @@ h2#report-subtitle {
     justify-content: space-between;
     align-items: center;
     padding: 0 8px;
-    font-size: 0.9em;
+    font-size: 1.1em;
     font-weight: bold;
-    color: white;
+    color: black;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     box-sizing: border-box;
 }
@@ -723,5 +723,3 @@ h2#report-subtitle {
 .hide-for-pdf {
     display: none !important;
 }
-
-
