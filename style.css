@@ -78,7 +78,6 @@ h2#report-subtitle {
 .btn-dark { background-color: #343a40; color: white; }
 
 
-/* PETA DERMAGA (BERTH MAP) */
 .berth-map-container {
     display: flex;
     margin-bottom: 30px;
@@ -256,6 +255,21 @@ h2#report-subtitle {
     z-index: 1; 
     box-shadow: 0 0 5px rgba(0,0,0,0.3); 
     display: block;
+}
+
+.draggable-cc-line {
+    position: absolute;
+    width: 100%;
+    height: 3px; 
+    left: 0;
+    cursor: ns-resize; 
+    z-index: 1001;
+    background-color: transparent; 
+}
+
+.draggable-cc-line {
+    border-top-style: dashed;
+    border-top-width: 5px;
 }
 
 
