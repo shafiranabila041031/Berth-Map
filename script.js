@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ccLineColors = {
         'CC01': '#d14c62ff', 
         'CC02': '#0000FF', 
-        'CC03': '#BFFF00', 
+        'CC03': '#17A2B8', 
         'CC04': '#b5a02aff'  
     };
 
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ccColors = {
             'CC01': '#d14c62ff', 
             'CC02': '#0000FF', 
-            'CC03': '#BFFF00', 
+            'CC03': '#17A2B8', 
             'CC04': '#b5a02aff'  
         };
       
@@ -1129,3 +1129,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
 }); 
+
