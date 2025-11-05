@@ -11,21 +11,19 @@
 <body>
 
     <div id="pdf-header" class="pdf-header"
-         style="display: none; /* Akan diubah jadi flex oleh JS */
-                /* Aktifkan Flexbox */
+         style="display: none; 
                 display: flex;
-                justify-content: space-between; /* Penting: Dorong item ke ujung */
-                align-items: center; /* Sejajarkan vertikal */
-                /* Styling umum */
+                justify-content: space-between; 
+                align-items: center; 
                 padding: 15px 25px;
                 border-bottom: 2px solid #ccc;
                 background-color: white;
                 width: 100%;
                 box-sizing: border-box;">
 
-        <div style="width: 150px; /* Sesuaikan lebar ini agar = lebar logo */ flex-shrink: 0; visibility: hidden;"></div>
+        <div style="width: 150px;  flex-shrink: 0; visibility: hidden;"></div>
 
-        <div class="pdf-title-container" style="text-align: center; /* Rata tengah teks */ margin: 0 auto; /* Otomatis tengahkan blok ini */">
+        <div class="pdf-title-container" style="text-align: center;  margin: 0 auto;">
             <h1 class="pdf-main-title" style="font-size: 1.8em; font-weight: bold; margin: 0 0 5px 0; color: #333; letter-spacing: 2px;">BERTH ALLOCATION MAP</h1>
             <h2 class="pdf-subtitle" style="font-size: 1.1em; font-weight: bold; margin: 0 0 8px 0; color: #555; letter-spacing: 1px;">TPK NILAM</h2>
             <p class="pdf-date-range" style="font-size: 0.9em; margin: 0; color: #666;"></p>
@@ -227,7 +225,7 @@
                     </div>
                     <div class="form-group">
                         <label for="ship-length">Panjang Kapal (LOA):</label>
-                        <input type="number" step="0.1" id="ship-length" name="length" placeholder="Contoh: 100" required>
+                        <input type="number" id="ship-length" step="0.1" name="length" placeholder="Contoh: 100" required>
                     </div>
                     <div class="form-group">
                         <label for="ship-draft">Draft Kapal (meter):</label>
@@ -268,12 +266,12 @@
                         <input type="datetime-local" id="end-time" name="endTime" required>
                     </div>
                     <div class="form-group">
-                        <label for="load-value">Loading:</label>
-                        <input type="number" id="load-value" name="loadValue" value="0">
-                    </div>
-                    <div class="form-group">
                         <label for="discharge-value">Discharge:</label>
                         <input type="number" id="discharge-value" name="dischargeValue" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="load-value">Loading:</label>
+                        <input type="number" id="load-value" name="loadValue" value="0">
                     </div>
                     <div class="form-group">
                         <label for="ship-status">Status Kapal:</label>
@@ -310,6 +308,16 @@
                 <span class="close-btn">&times;</span>
                 <h2 id="maintenance-modal-title">Tambah Maintenance</h2>
                 <form id="maintenance-form">
+
+                    <div class="form-group form-group-full">
+                        <label for="maintenance-type">Tipe Blok</label>
+                        <select id="maintenance-type" name="type">
+                            <option value="maintenance">Maintenance (Blok Oranye)</option>
+                            <option value="no-vessel">Area Kosong (Teks Diagonal)</option>
+                        </select>
+                        <small>Pilih jenis blok yang ingin ditambahkan ke grid.</small>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="maintenance-start-kd">Start KD:</label>
                         <input type="number" id="maintenance-start-kd" name="startKd" placeholder="Contoh: 350" min="330" max="650" step="10" required>
@@ -375,5 +383,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
