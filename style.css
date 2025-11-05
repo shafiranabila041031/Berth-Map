@@ -263,7 +263,8 @@ h2#report-subtitle {
     height: 3px; 
     left: 0;
     cursor: ns-resize; 
-    z-index: 1001;
+    z-index: 50;
+    /* z-index: 1001; */
     background-color: transparent; 
 }
 
@@ -736,4 +737,27 @@ h2#report-subtitle {
 
 .hide-for-pdf {
     display: none !important;
+}
+
+.no-vessel-block {
+    position: absolute;
+    z-index: 14; 
+    border: 1px dashed #aaa;
+    box-sizing: border-box;
+    cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    color: #0000FF; 
+    font-size: 1.2em; 
+}
+
+.no-vessel-block span {
+    transform: rotate(-45deg); 
+    white-space: nowrap;
+    padding: 10px;
+    opacity: 0.7;
 }
