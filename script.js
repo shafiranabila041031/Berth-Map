@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
-    const HOUR_WIDTH = 50;
+    const HOUR_WIDTH = 25;
     const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
     const PENDING_FORM_KEY = 'pendingShipForm';
@@ -168,18 +168,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderMaintenance() {
-        grid.querySelectorAll('.maintenance-block').forEach(el => el.remove());
+        grid.querySelectorAll('.maintenance-block, .no-vessel-block').forEach(el => el.remove());
+        
         const weekStart = new Date(currentStartDate);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
         const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
         const visibleMaintenance = maintenanceSchedules.filter(item => {
-             if (!item.startTime || !item.endTime) return false;
+            if (!item.startTime || !item.endTime) return false;
             const startTime = new Date(item.startTime);
             const endTime = new Date(item.endTime);
-             if (isNaN(startTime) || isNaN(endTime)) return false;
+            if (isNaN(startTime) || isNaN(endTime)) return false;
             return startTime < weekEnd && endTime > weekStart;
         });
+
         visibleMaintenance.forEach((item, index) => {
             const itemIndex = maintenanceSchedules.indexOf(item);
             const startTime = new Date(item.startTime);
@@ -190,22 +192,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
             const top = (item.startKd - KD_MIN) * kdUnitPx;
 
-            const maintenanceLength = Math.max((item.endKd - item.startKd), 10); // Panjang minimum
-            const height = Math.max(maintenanceLength * kdUnitPx, KD_HEIGHT_UNIT / 2); // Tinggi minimum
+            const maintenanceLength = Math.max((item.endKd - item.startKd), 10); 
+            const height = Math.max(maintenanceLength * kdUnitPx, KD_HEIGHT_UNIT / 2); 
 
             const finalTop = Math.max(top, 0);
             const finalLeft = Math.max(left, 0);
 
-            const block = document.createElement('div');
-            block.className = 'maintenance-block';
-            block.style.top = `${finalTop}px`;
-            block.style.left = `${finalLeft}px`;
-            block.style.width = `${width}px`;
-            block.style.height = `${height}px`;
-            block.textContent = item.keterangan;
-            block.title = `Maintenance: ${item.keterangan} (Double click untuk mengedit)`;
-            block.addEventListener('dblclick', () => editMaintenance(itemIndex));
-            grid.appendChild(block);
+            if (item.type === 'no-vessel') {
+                const block = document.createElement('div');
+                block.className = 'no-vessel-block'; 
+                block.style.top = `${finalTop}px`;
+                block.style.left = `${finalLeft}px`;
+                block.style.width = `${width}px`;
+                block.style.height = `${height}px`;
+                block.innerHTML = `<span>No Vessel<br>Free for Maintenance</span>`; 
+                block.title = `Area Kosong: ${item.keterangan} (Double click untuk mengedit)`;
+                block.addEventListener('dblclick', () => editMaintenance(itemIndex)); 
+                grid.appendChild(block);
+            } else {
+                    const block = document.createElement('div');
+                    block.className = 'maintenance-block';
+                    block.style.top = `${finalTop}px`;
+                    block.style.left = `${finalLeft}px`;
+                    block.style.width = `${width}px`;
+                    block.style.height = `${height}px`;
+                    block.textContent = item.keterangan;
+                    block.title = `Maintenance: ${item.keterangan} (Double click untuk mengedit)`;
+                    block.addEventListener('dblclick', () => editMaintenance(itemIndex));
+                    grid.appendChild(block);
+            }
         });
     }
 
@@ -627,6 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function editMaintenance(index) {
         editingMaintenanceIndex = index;
         const item = maintenanceSchedules[index];
+        if (maintenanceForm.elements['maintenance-type']) {
+            maintenanceForm.elements['maintenance-type'].value = item.type || 'maintenance'; 
+        }
         maintenanceForm.elements['startKd'].value = item.startKd;
         maintenanceForm.elements['endKd'].value = item.endKd;
         maintenanceForm.elements['startTime'].value = formatForInput(item.startTime);
@@ -684,7 +702,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const pdfOptions = document.getElementById('pdf-options');
         const gridScroll = document.querySelector('.grid-scroll-container');
 
-        // Elemen untuk kalkulasi
         const yAxisColumn = document.querySelector('.y-axis-column');
         const gridContainer = document.querySelector('.grid-container');
         const legendsWrapper = document.querySelector('.bottom-legends-wrapper');
@@ -949,7 +966,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editingShipIndex !== null) {
                 shipSchedules[editingShipIndex] = shipData;
             } else {
-//                  shipSchedules.push(shipData);
                  shipSchedules.unshift(shipData);
             }
             localStorage.setItem('shipSchedules', JSON.stringify(shipSchedules));
@@ -1129,4 +1145,3 @@ document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
 }); 
-
