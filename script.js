@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
+const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
     const HOUR_WIDTH = 25;
     const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
@@ -401,11 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.style.position = 'relative'; 
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `repeat(${totalHours}, ${HOUR_WIDTH}px)`;
-        grid.style.gridTemplateRows = `repeat(${totalKdSteps - 1}, ${KD_HEIGHT_UNIT}px)`;
+        grid.style.gridTemplateRows = `repeat(${totalKdSteps}, ${KD_HEIGHT_UNIT}px)`;
+        grid.style.height = `${(totalKdSteps) * KD_HEIGHT_UNIT}px`;
         grid.style.width = `${totalGridWidth}px`; 
-        grid.style.height = `${(totalKdSteps - 1) * KD_HEIGHT_UNIT}px`;
+    
 
-        for (let row = 0; row < totalKdSteps - 1; row++) {
+        for (let row = 0; row < totalKdSteps; row++) {
             for (let col = 0; col < totalHours; col++) {
                 const cell = document.createElement('div');
                 cell.classList.add('grid-cell');
@@ -620,8 +621,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('ship-status').value = ship.status;
         document.getElementById('ship-berth-side').value = ship.berthSide;
         document.getElementById('ship-bsh').value = ship.bsh || '';
-        document.getElementById('qcc-name').value = ship.qccName || '';
-    }
+        document.querySelectorAll('#qcc-checkbox-group input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+});
+
+const savedQCCs = ship.qccName || ''; 
+if (savedQCCs) {
+    const qccArray = savedQCCs.split(' & ');
+    qccArray.forEach(qccValue => {
+        const checkbox = document.querySelector(`#qcc-checkbox-group input[value="${qccValue}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+}
+}
     function editShip(index) {
         editingShipIndex = index;
         fillFormForEdit(shipSchedules[index]);
@@ -685,12 +699,9 @@ document.addEventListener('DOMContentLoaded', () => {
         restModal.style.display = 'block';
     }
 
-
     async function exportToPDF(type = 'weekly') {
         console.log(`[PDF Export] Starting export process for type: ${type}`);
         const { jsPDF } = window.jspdf;
-
-        
         const pdfHeader = document.getElementById('pdf-header');
         const pelindoLogoInHeader = pdfHeader.querySelector('.pdf-logo');
         const mainHeader = document.querySelector('.main-header');
@@ -701,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const exportBtn = document.getElementById('export-pdf-btn');
         const pdfOptions = document.getElementById('pdf-options');
         const gridScroll = document.querySelector('.grid-scroll-container');
-
         const yAxisColumn = document.querySelector('.y-axis-column');
         const gridContainer = document.querySelector('.grid-container');
         const legendsWrapper = document.querySelector('.bottom-legends-wrapper');
@@ -755,6 +765,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (type === 'daily') {
                 console.log("[PDF Export] Preparing for daily export...");
+
+                
                 let today = new Date(); today.setHours(0,0,0,0);
                 let tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
                 pdfDateRangeStr = `${formatDateForPDF(today)} to ${formatDateForPDF(tomorrow)}`;
@@ -776,7 +788,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 gridScroll.style.overflowX = 'hidden';
                 gridScroll.scrollLeft = targetScrollLeft;
-                legendsScrollContainer.scrollLeft = targetScrollLeft;
+                // legendsScrollContainer.scrollLeft = targetScrollLeft;
+                legendsScrollContainer.scrollLeft = 0;
 
             } else { 
                 console.log("[PDF Export] Preparing for weekly export...");
@@ -793,14 +806,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
-            legendsScrollContainer.style.width = `${captureWidth}px`;
+            legendsScrollContainer.style.width = (type === 'daily' ? `${legendsFullWidth}px` : `${captureWidth}px`);
             pdfHeader.querySelector('.pdf-date-range').textContent = pdfDateRangeStr;
             pdfHeader.style.display = 'flex'; 
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
             if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = 'block'; 
 
 
-            await new Promise(resolve => setTimeout(resolve, 300)); 
+            await new Promise(resolve => setTimeout(resolve, 1000)); 
             console.log("[PDF Export] Delay finished. Starting canvas capture...");
 
             const logoStyles = window.getComputedStyle(pelindoLogoInHeader);
@@ -823,15 +836,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 width: captureWidth, 
                 height: berthMapContainer.scrollHeight,
                 x: 0, 
-                scrollX: (type === 'daily' ? targetScrollLeft : 0), 
             };
 
             const optionsLegends = {
                 ...commonOptions,
-                 width: captureWidth, 
-                   height: legendsScrollContainer.scrollHeight,
-                   x: 0, 
-                   scrollX: (type === 'daily' ? targetScrollLeft : 0)
+                width: (type === 'daily' ? legendsFullWidth : captureWidth),
+                height: legendsScrollContainer.scrollHeight,
+                x: 0, 
             };
             const optionsHeader = { ...commonOptions, width: captureWidth, height: pdfHeader.offsetHeight, x:0 };
 
@@ -842,7 +853,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("[PDF Export] Berth Map Container captured. Capturing Legends...");
             const canvasLegends = await html2canvas(legendsScrollContainer, optionsLegends);
             console.log("[PDF Export] Legends captured.");
-
             console.log("[PDF Export] Combining canvases into PDF...");
 
             const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
@@ -963,6 +973,11 @@ document.addEventListener('DOMContentLoaded', () => {
             shipData.bsh = parseInt(shipData.bsh, 10) || null;
             shipData.loadValue = parseInt(shipData.loadValue, 10) || 0;
             shipData.dischargeValue = parseInt(shipData.dischargeValue, 10) || 0;
+        
+        const qccCheckboxes = document.querySelectorAll('#qcc-checkbox-group input[type="checkbox"]:checked');
+        const checkedQCCs = Array.from(qccCheckboxes).map(cb => cb.value);
+        shipData.qccName = checkedQCCs.join(' & ');
+
             if (editingShipIndex !== null) {
                 shipSchedules[editingShipIndex] = shipData;
             } else {
@@ -1143,5 +1158,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } 
     
     initialize();
+
 
 }); 
