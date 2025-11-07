@@ -11,26 +11,28 @@
 <body>
 
     <div id="pdf-header" class="pdf-header"
-         style="display: none; 
+         style="display: none; /* Akan diubah jadi flex oleh JS */
+                /* Aktifkan Flexbox */
                 display: flex;
-                justify-content: space-between; 
-                align-items: center; 
+                justify-content: space-between; /* Penting: Dorong item ke ujung */
+                align-items: center; /* Sejajarkan vertikal */
+                /* Styling umum */
                 padding: 15px 25px;
                 border-bottom: 2px solid #ccc;
                 background-color: white;
                 width: 100%;
                 box-sizing: border-box;">
 
-        <div style="width: 150px;  flex-shrink: 0; visibility: hidden;"></div>
+        <div style="width: 150px; /* Sesuaikan lebar ini agar = lebar logo */ flex-shrink: 0; visibility: hidden;"></div>
 
-        <div class="pdf-title-container" style="text-align: center;  margin: 0 auto;">
+        <div class="pdf-title-container" style="text-align: center; /* Rata tengah teks */ margin: 0 auto; /* Otomatis tengahkan blok ini */">
             <h1 class="pdf-main-title" style="font-size: 1.8em; font-weight: bold; margin: 0 0 5px 0; color: #333; letter-spacing: 2px;">BERTH ALLOCATION MAP</h1>
             <h2 class="pdf-subtitle" style="font-size: 1.1em; font-weight: bold; margin: 0 0 8px 0; color: #555; letter-spacing: 1px;">TPK NILAM</h2>
             <p class="pdf-date-range" style="font-size: 0.9em; margin: 0; color: #666;"></p>
         </div>
 
         <img src="./pelindo-logo.png" alt="Pelindo Logo" class="pdf-logo"
-             style="height: 50px; width: auto; display: block; flex-shrink: 0;" /* flex-shrink: 0 agar logo tidak mengecil */
+             style="height: 50px; width: auto; display: block; flex-shrink: 0;" 
              onerror="this.style.display='none'; console.error('Gagal memuat logo PDF:', this.src);">
 
     </div>
@@ -291,8 +293,24 @@
                         </select>
                     </div>
                     <div class="form-group form-group-full">
-                        <label for="qcc-name">QCC:</label>
-                        <input type="text" id="qcc-name" name="qccName" placeholder="Ex: QCC03 & " required>
+                        <label>QCC:</label> <div class="qcc-checkbox-group" id="qcc-checkbox-group">
+                            <div class="qcc-option">
+                                <input type="checkbox" id="qcc-01" name="qcc-options" value="QCC01">
+                                <label for="qcc-01">QCC01</label>
+                            </div>
+                            <div class="qcc-option">
+                                <input type="checkbox" id="qcc-02" name="qcc-options" value="QCC02">
+                                <label for="qcc-02">QCC02</label>
+                            </div>
+                            <div class="qcc-option">
+                                <input type="checkbox" id="qcc-03" name="qcc-options" value="QCC03">
+                                <label for="qcc-03">QCC03</label>
+                            </div>
+                            <div class="qcc-option">
+                                <input type="checkbox" id="qcc-04" name="qcc-options" value="QCC04">
+                                <label for="qcc-04">QCC04</label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group form-group-full form-button-group">
@@ -320,12 +338,12 @@
                     
                     <div class="form-group">
                         <label for="maintenance-start-kd">Start KD:</label>
-                        <input type="number" id="maintenance-start-kd" name="startKd" placeholder="Contoh: 350" min="330" max="650" step="10" required>
+                        <input type="number" id="maintenance-start-kd" name="startKd" placeholder="Contoh: 350" min="330" max="650" step="5" required>
                     </div>
 
                     <div class="form-group">
                         <label for="maintenance-end-kd">End KD:</label>
-                        <input type="number" id="maintenance-end-kd" name="endKd" placeholder="Contoh: 400" min="330" max="650" step="10" required>
+                        <input type="number" id="maintenance-end-kd" name="endKd" placeholder="Contoh: 400" min="330" max="650" step="5" required>
                     </div>
 
                     <div class="form-group">
