@@ -605,7 +605,7 @@ h2#report-subtitle {
 #comm-log-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85em;
+    font-size: 0.9em;
 }
 #comm-log-table th,
 #comm-log-table td {
