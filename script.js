@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
+    const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
     const HOUR_WIDTH = 25;
     const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
@@ -21,7 +21,7 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
         'CC01': '#d14c62ff', 
         'CC02': '#0000FF', 
         'CC03': '#17A2B8', 
-        'CC04': '#b5a02aff'  
+        'CC04': '#b5a02aff'  
     };
 
     const grid = document.getElementById('grid');
@@ -36,7 +36,8 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
     const formSubmitBtn = shipForm.querySelector('button[type="submit"]');
     const prevWeekBtn = document.getElementById('prev-week-btn');
     const nextWeekBtn = document.getElementById('next-week-btn');
-    const weekRangeDisplay = document.getElementById('week-range-display');
+    
+    const weekDatePicker = document.getElementById('week-date-picker');
     const clearDataBtn = document.getElementById('clear-data-btn');
     const berthLabelsContainer = document.querySelector('.berth-labels-container');
     const berthMapContainer = document.getElementById('berth-map-container');
@@ -259,7 +260,7 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
         });
     }
 
-  
+ 
     function createDraggableCCLines() {
         const ccNames = ['CC04', 'CC03', 'CC02', 'CC01'];
         let initialTopPosition = 50; 
@@ -277,7 +278,7 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
             initialTopPosition += 30; 
         });
     }
-  
+ 
 
     function saveCommLog() {
         const table = document.getElementById('comm-log-table');
@@ -378,6 +379,15 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
         return d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     }
 
+    // TAMBAHKAN FUNGSI BARU INI
+    function formatDateForDateInput(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        if (isNaN(d)) return '';
+        const pad = (num) => num.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
 
     function initialize() {
         updateDisplay(); 
@@ -434,20 +444,20 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
             yAxis.appendChild(label);
         });
 
-  
+ 
         const berths = [
             { name: 'BERTH 2', startKd: 330, endKd: 490, ccs: ['CC04', 'CC03'] },
             { name: 'BERTH 1', startKd: 490, endKd: 650, ccs: ['CC02', 'CC01'] }
         ];
 
-      
+     
         const ccColors = {
             'CC01': '#d14c62ff', 
             'CC02': '#0000FF', 
             'CC03': '#17A2B8', 
-            'CC04': '#b5a02aff'  
+            'CC04': '#b5a02aff'  
         };
-      
+     
 
         berths.forEach(berth => {
             const berthLabelContainer = document.createElement('div');
@@ -456,7 +466,7 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
             const innerLabelWrapper = document.createElement('div');
             innerLabelWrapper.className = 'berth-label'; 
 
-   
+       
             const kdStepHeight = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); 
             const top = (berth.startKd - KD_MIN) * kdStepHeight;
             const height = (berth.endKd - berth.startKd) * kdStepHeight;
@@ -477,7 +487,7 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
             const ccTopName = berth.ccs[1]; 
             ccEl_Top.textContent = ccTopName; 
             ccEl_Top.style.fontSize = '0.9em';
-     
+       
             ccEl_Top.style.color = ccColors[ccTopName] || 'red'; 
             innerLabelWrapper.appendChild(ccEl_Top);
 
@@ -593,9 +603,9 @@ const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + 
     }
 
     function updateDisplay() {
-        const endDate = new Date(currentStartDate);
-        endDate.setDate(endDate.getDate() + 6);
-        weekRangeDisplay.textContent = `${formatDate(currentStartDate)} - ${formatDate(endDate)}`;
+        // GANTI BAGIAN INI
+        weekDatePicker.value = formatDateForDateInput(currentStartDate);
+
         drawGrid(); 
         renderRestTimes();
         renderMaintenance();
@@ -748,6 +758,11 @@ if (savedQCCs) {
         const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
         const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block';
 
+        // FIX 1: Simpan style asli y-axis-column
+        const oldYAxisPosition = yAxisColumn.style.position;
+        const oldYAxisLeft = yAxisColumn.style.left;
+        const oldYAxisZIndex = yAxisColumn.style.zIndex;
+
         let targetScrollLeft = 0;
 
         try {
@@ -769,32 +784,42 @@ if (savedQCCs) {
                 
                 let today = new Date(); today.setHours(0,0,0,0);
                 let tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-                pdfDateRangeStr = `${formatDateForPDF(today)} to ${formatDateForPDF(tomorrow)}`;
-                pdfFileName = `Berth-Allocation-Harian-${today.toISOString().split('T')[0]}.pdf`;
+                
+                // Perbarui rentang tanggal PDF harian berdasarkan tanggal yang dipilih
+                let selectedDay = new Date(currentStartDate);
+                let nextDay = new Date(selectedDay);
+                nextDay.setDate(selectedDay.getDate() + 1);
+
+                pdfDateRangeStr = `${formatDateForPDF(selectedDay)} to ${formatDateForPDF(nextDay)}`;
+                pdfFileName = `Berth-Allocation-Harian-${selectedDay.toISOString().split('T')[0]}.pdf`;
 
                 let weekStart = new Date(currentStartDate); weekStart.setHours(0,0,0,0);
-                let dayDiff = Math.round((today.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
-                console.log(`[PDF Export] Day difference from week start: ${dayDiff}`);
+                
+                // Untuk PDF harian, kita selalu mulai dari hari pertama yang ditampilkan
+                let dayDiff = 0; // Selalu 0 karena kita mau hari pertama dan kedua dari currentStartDate
 
-                if (dayDiff < 0 || dayDiff >= 7) {
-                    alert('Tanggal "Hari Ini" tidak ada di minggu yang sedang ditampilkan. Silakan navigasi ke minggu yang benar.');
-                    throw new Error('Daily export failed: Date not in view.');
-                }
+                console.log(`[PDF Export] Daily - Day difference from week start: ${dayDiff}`);
 
-                captureWidth = yAxisWidth + (2 * dayWidth);
-                targetScrollLeft = dayDiff * dayWidth;
-                captureStartX = targetScrollLeft;
+                // Hapus pengecekan 'if (dayDiff < 0 ...)' karena tidak lagi relevan
+
+                captureWidth = yAxisWidth + (2 * dayWidth); // Capture 2 hari
+                targetScrollLeft = dayDiff * dayWidth; // Akan selalu 0
+                captureStartX = targetScrollLeft; // Akan selalu 0
                 console.log(`[PDF Export] Daily - captureWidth: ${captureWidth}px, targetScrollLeft: ${targetScrollLeft}px, captureStartX: ${captureStartX}px`);
 
                 gridScroll.style.overflowX = 'hidden';
                 gridScroll.scrollLeft = targetScrollLeft;
-                // legendsScrollContainer.scrollLeft = targetScrollLeft;
                 legendsScrollContainer.scrollLeft = 0;
 
             } else { 
                 console.log("[PDF Export] Preparing for weekly export...");
-                pdfDateRangeStr = weekRangeDisplay.textContent;
-                pdfFileName = `Berth-Allocation-Mingguan-${pdfDateRangeStr.replace(/[\s/]/g, '')}.pdf`;
+                // Buat rentang tanggal untuk PDF mingguan
+                let startDate = new Date(currentStartDate);
+                let endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                pdfDateRangeStr = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+
+                pdfFileName = `Berth-Allocation-Mingguan-${startDate.toISOString().split('T')[0]}.pdf`;
                 captureWidth = fullWidth;
                 captureStartX = 0;
                 targetScrollLeft = 0;
@@ -812,6 +837,13 @@ if (savedQCCs) {
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
             if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = 'block'; 
 
+            // FIX 2: Ubah position: sticky menjadi relative untuk html2canvas (hanya untuk mingguan)
+            if (type === 'weekly') {
+                console.log("[PDF Export] Mengubah .y-axis-column dari sticky ke relative untuk capture mingguan.");
+                yAxisColumn.style.position = 'relative'; 
+                yAxisColumn.style.left = 'auto';
+                yAxisColumn.style.zIndex = '18';
+            }
 
             await new Promise(resolve => setTimeout(resolve, 1000)); 
             console.log("[PDF Export] Delay finished. Starting canvas capture...");
@@ -897,6 +929,12 @@ if (savedQCCs) {
             if(currentTimeIndicator) currentTimeIndicator.style.display = oldTimeIndicatorDisplay; 
             if(berthDividerLine) berthDividerLine.style.display = oldDividerDisplay; 
 
+            // FIX 3: Kembalikan style y-axis-column
+            yAxisColumn.style.position = oldYAxisPosition;
+            yAxisColumn.style.left = oldYAxisLeft;
+            yAxisColumn.style.zIndex = oldYAxisZIndex;
+            console.log("[PDF Export] Mengembalikan .y-axis-column ke sticky.");
+
             exportBtn.disabled = false;
             exportBtn.innerHTML = originalBtnHTML;
             console.log("[PDF Export] Cleanup finished.");
@@ -906,6 +944,21 @@ if (savedQCCs) {
     function setupEventListeners() {
         prevWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() - 7); updateDisplay(); });
         nextWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() + 7); updateDisplay(); });
+
+        // TAMBAHKAN EVENT LISTENER BARU INI
+        weekDatePicker.addEventListener('change', () => {
+            const selectedDate = weekDatePicker.value;
+            if (!selectedDate) {
+                currentStartDate = getStartOfWeek(new Date()); // Fallback jika tanggal dikosongkan
+            } else {
+                // Konversi 'YYYY-MM-DD' ke Date object
+                // Kita split untuk menghindari masalah timezone
+                const parts = selectedDate.split('-'); 
+                // Bulan di JS 0-indexed (0=Jan, 1=Feb, ...), jadi kita kurangi 1
+                currentStartDate = new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+            updateDisplay(); // Muat ulang grid dengan tanggal baru
+        });
 
         addShipBtn.addEventListener('click', () => {
             editingShipIndex = null;
@@ -1124,7 +1177,7 @@ if (savedQCCs) {
 
         let activeDraggableLine = null;
 
-     
+       
         grid.addEventListener('mousedown', (e) => {
             if (e.target.classList.contains('draggable-cc-line')) {
                 activeDraggableLine = e.target;
@@ -1153,11 +1206,10 @@ if (savedQCCs) {
         document.addEventListener('mouseup', () => {
             activeDraggableLine = null; 
         });
-      
+     
 
     } 
     
     initialize();
 
-
-}); 
+});
