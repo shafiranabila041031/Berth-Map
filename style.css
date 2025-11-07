@@ -89,7 +89,7 @@ h2#report-subtitle {
     flex-direction: column;
     position: sticky;
     left: 0;
-    z-index: 15;
+    z-index: 18;
     background-color: white;
 }
 
@@ -193,7 +193,7 @@ h2#report-subtitle {
     text-align: center;
     font-weight: bold;
     padding: 8px 0;
-    border-right: 1px solid #ddd;
+    border-right: 2px solid #333;
     box-sizing: border-box;
     font-size: 0.9em;
     background-color: #dbeafe;
@@ -219,6 +219,10 @@ h2#report-subtitle {
     flex-shrink: 0; 
 }
 
+.hour-label:nth-child(12n) {
+    border-right: 2px solid #333; 
+}
+
 .grid {
     position: relative;
     display: grid; 
@@ -231,6 +235,10 @@ h2#report-subtitle {
     box-sizing: border-box;
     border-right: 1px solid #f0f0f0; 
     border-bottom: 1px solid #f0f0f0; 
+}
+
+.grid-cell:nth-child(24n) {
+    border-right: 2px solid #333;
 }
 
 #berth-divider-line {
@@ -786,4 +794,16 @@ h2#report-subtitle {
 .qcc-option label {
     font-weight: normal;
     font-size: 1em;
+}
+
+/* Style untuk pemilih tanggal di header */
+.controls #week-date-picker {
+    font-size: 0.9em;
+    padding: 6px;
+    margin: 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
