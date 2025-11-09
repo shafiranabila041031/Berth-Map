@@ -379,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     }
 
-    // TAMBAHKAN FUNGSI BARU INI
     function formatDateForDateInput(date) {
         if (!date) return '';
         const d = new Date(date);
@@ -603,7 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateDisplay() {
-        // GANTI BAGIAN INI
         weekDatePicker.value = formatDateForDateInput(currentStartDate);
 
         drawGrid(); 
@@ -748,6 +746,18 @@ if (savedQCCs) {
         }
 
         mainHeader.classList.add('hide-for-pdf'); 
+        const restBlocks = document.querySelectorAll('.rest-block');
+
+        const originalRestBlockHTML = []; 
+        restBlocks.forEach(block => {
+            originalRestBlockHTML.push(block.innerHTML); 
+            const text = block.textContent.trim();
+            if (text) {
+                const stackedText = text.split('').join('<br>'); 
+                block.innerHTML = stackedText;
+                block.classList.add('pdf-vertical-text-hack'); 
+            }
+        });
 
         const oldHeaderWidth = pdfHeader.style.width;
         const oldMapWidth = berthMapContainer.style.width;
@@ -758,7 +768,6 @@ if (savedQCCs) {
         const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
         const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block';
 
-        // FIX 1: Simpan style asli y-axis-column
         const oldYAxisPosition = yAxisColumn.style.position;
         const oldYAxisLeft = yAxisColumn.style.left;
         const oldYAxisZIndex = yAxisColumn.style.zIndex;
@@ -777,6 +786,7 @@ if (savedQCCs) {
             const hourWidth = HOUR_WIDTH;
             const dayWidth = 24 * hourWidth;
             const yAxisWidth = yAxisColumn.offsetWidth;
+            const restBlocks = document.querySelectorAll('.rest-block');
 
             if (type === 'daily') {
                 console.log("[PDF Export] Preparing for daily export...");
@@ -785,7 +795,6 @@ if (savedQCCs) {
                 let today = new Date(); today.setHours(0,0,0,0);
                 let tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
                 
-                // Perbarui rentang tanggal PDF harian berdasarkan tanggal yang dipilih
                 let selectedDay = new Date(currentStartDate);
                 let nextDay = new Date(selectedDay);
                 nextDay.setDate(selectedDay.getDate() + 1);
@@ -795,16 +804,13 @@ if (savedQCCs) {
 
                 let weekStart = new Date(currentStartDate); weekStart.setHours(0,0,0,0);
                 
-                // Untuk PDF harian, kita selalu mulai dari hari pertama yang ditampilkan
-                let dayDiff = 0; // Selalu 0 karena kita mau hari pertama dan kedua dari currentStartDate
+                let dayDiff = 0; 
 
                 console.log(`[PDF Export] Daily - Day difference from week start: ${dayDiff}`);
 
-                // Hapus pengecekan 'if (dayDiff < 0 ...)' karena tidak lagi relevan
-
-                captureWidth = yAxisWidth + (2 * dayWidth); // Capture 2 hari
-                targetScrollLeft = dayDiff * dayWidth; // Akan selalu 0
-                captureStartX = targetScrollLeft; // Akan selalu 0
+                captureWidth = yAxisWidth + (2 * dayWidth); 
+                targetScrollLeft = dayDiff * dayWidth; 
+                captureStartX = targetScrollLeft; 
                 console.log(`[PDF Export] Daily - captureWidth: ${captureWidth}px, targetScrollLeft: ${targetScrollLeft}px, captureStartX: ${captureStartX}px`);
 
                 gridScroll.style.overflowX = 'hidden';
@@ -813,7 +819,6 @@ if (savedQCCs) {
 
             } else { 
                 console.log("[PDF Export] Preparing for weekly export...");
-                // Buat rentang tanggal untuk PDF mingguan
                 let startDate = new Date(currentStartDate);
                 let endDate = new Date(startDate);
                 endDate.setDate(startDate.getDate() + 6);
@@ -837,7 +842,6 @@ if (savedQCCs) {
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
             if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = 'block'; 
 
-            // FIX 2: Ubah position: sticky menjadi relative untuk html2canvas (hanya untuk mingguan)
             if (type === 'weekly') {
                 console.log("[PDF Export] Mengubah .y-axis-column dari sticky ke relative untuk capture mingguan.");
                 yAxisColumn.style.position = 'relative'; 
@@ -919,6 +923,16 @@ if (savedQCCs) {
             console.log("[PDF Export] Cleaning up...");
             mainHeader.classList.remove('hide-for-pdf');
 
+            const restBlocksCleanup = document.querySelectorAll('.rest-block');
+            
+            restBlocksCleanup.forEach((block, index) => {
+                if (originalRestBlockHTML[index] !== undefined) {
+
+                    block.innerHTML = originalRestBlockHTML[index]; 
+                }
+                block.classList.remove('pdf-vertical-text-hack'); 
+            });
+
             pdfHeader.style.display = 'none'; 
             pdfHeader.style.width = oldHeaderWidth;
             berthMapContainer.style.width = oldMapWidth;
@@ -929,7 +943,6 @@ if (savedQCCs) {
             if(currentTimeIndicator) currentTimeIndicator.style.display = oldTimeIndicatorDisplay; 
             if(berthDividerLine) berthDividerLine.style.display = oldDividerDisplay; 
 
-            // FIX 3: Kembalikan style y-axis-column
             yAxisColumn.style.position = oldYAxisPosition;
             yAxisColumn.style.left = oldYAxisLeft;
             yAxisColumn.style.zIndex = oldYAxisZIndex;
@@ -945,19 +958,16 @@ if (savedQCCs) {
         prevWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() - 7); updateDisplay(); });
         nextWeekBtn.addEventListener('click', () => { currentStartDate.setDate(currentStartDate.getDate() + 7); updateDisplay(); });
 
-        // TAMBAHKAN EVENT LISTENER BARU INI
+
         weekDatePicker.addEventListener('change', () => {
             const selectedDate = weekDatePicker.value;
             if (!selectedDate) {
-                currentStartDate = getStartOfWeek(new Date()); // Fallback jika tanggal dikosongkan
+                currentStartDate = getStartOfWeek(new Date()); 
             } else {
-                // Konversi 'YYYY-MM-DD' ke Date object
-                // Kita split untuk menghindari masalah timezone
                 const parts = selectedDate.split('-'); 
-                // Bulan di JS 0-indexed (0=Jan, 1=Feb, ...), jadi kita kurangi 1
                 currentStartDate = new Date(parts[0], parts[1] - 1, parts[2]);
             }
-            updateDisplay(); // Muat ulang grid dengan tanggal baru
+            updateDisplay(); 
         });
 
         addShipBtn.addEventListener('click', () => {
