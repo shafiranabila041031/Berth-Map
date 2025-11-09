@@ -101,7 +101,7 @@ h2#report-subtitle {
 #date-day-label-header {
     height: 37px;
     line-height: 37px;
-    border-top-left-radius: 6px;
+    border-top-left-radius: 0;
     border-bottom: 2px solid #ccc;
     border-top: 1px solid #b0c4de;
 }
@@ -197,7 +197,7 @@ h2#report-subtitle {
     box-sizing: border-box;
     font-size: 0.9em;
     background-color: #dbeafe;
-    border-top-right-radius: 6px;
+    border-top-right-radius: 0;
     flex-shrink: 0; 
 }
 .hour-axis {
@@ -256,12 +256,12 @@ h2#report-subtitle {
     top: 0; 
     height: 100%; 
     width: 3px; 
-    background-color: #e53e3e; 
-    border-left: 1px solid #9b2c2c; 
-    border-right: 1px solid #9b2c2c; 
+    background-color: transparent;
+    border-left: 5px dashed #e53e3e;
+    border-right: none;
     cursor: ew-resize; 
     z-index: 1; 
-    box-shadow: 0 0 5px rgba(0,0,0,0.3); 
+    box-shadow: none;
     display: block;
 }
 
@@ -671,16 +671,27 @@ h2#report-subtitle {
     border-right: 1px solid #dc3545;
     box-sizing: border-box;
     cursor: pointer;
+    writing-mode: vertical-lr; 
+    text-orientation: upright; 
+    white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 10px;
     font-size: 1.2em;
     font-weight: bold;
-    color: #fff;
+    color: #5C4033;
     text-shadow: 1px 1px 2px #000;
     writing-mode: vertical-rl;
+
 }
+
+.rest-block.pdf-vertical-text-hack {
+    writing-mode: initial !important;
+    text-orientation: initial !important;
+    line-height: 1.1em;
+}
+
 .rest-block:hover {
     background-color: rgba(255, 0, 0, 0.5);
 }
@@ -796,7 +807,6 @@ h2#report-subtitle {
     font-size: 1em;
 }
 
-/* Style untuk pemilih tanggal di header */
 .controls #week-date-picker {
     font-size: 0.9em;
     padding: 6px;
