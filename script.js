@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
-    const HOUR_WIDTH = 50;
+    const HOUR_WIDTH = 25;
     const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
     const PENDING_FORM_KEY = 'pendingShipForm';
@@ -1474,4 +1474,5 @@ if (savedQCCs) {
     initialize();
 
 });
+
 
