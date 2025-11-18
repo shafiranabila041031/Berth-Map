@@ -78,6 +78,7 @@ h2#report-subtitle {
 .btn-dark { background-color: #343a40; color: white; }
 
 
+/* PETA DERMAGA (BERTH MAP) */
 .berth-map-container {
     display: flex;
     margin-bottom: 30px;
@@ -89,7 +90,7 @@ h2#report-subtitle {
     flex-direction: column;
     position: sticky;
     left: 0;
-    z-index: 18;
+    z-index: 15;
     background-color: white;
 }
 
@@ -101,7 +102,7 @@ h2#report-subtitle {
 #date-day-label-header {
     height: 37px;
     line-height: 37px;
-    border-top-left-radius: 0;
+    border-top-left-radius: 6px;
     border-bottom: 2px solid #ccc;
     border-top: 1px solid #b0c4de;
 }
@@ -178,7 +179,7 @@ h2#report-subtitle {
 .grid-container {
     position: relative;
     min-width: max-content;
-    width: 100%;
+    /* width: 100%; */
 }
 .x-axis {
     display: flex;
@@ -193,11 +194,11 @@ h2#report-subtitle {
     text-align: center;
     font-weight: bold;
     padding: 8px 0;
-    border-right: 2px solid #333;
+    border-right: 1px solid #ddd;
     box-sizing: border-box;
     font-size: 0.9em;
     background-color: #dbeafe;
-    border-top-right-radius: 0;
+    border-top-right-radius: 6px;
     flex-shrink: 0; 
 }
 .hour-axis {
@@ -219,26 +220,18 @@ h2#report-subtitle {
     flex-shrink: 0; 
 }
 
-.hour-label:nth-child(12n) {
-    border-right: 2px solid #333; 
-}
-
 .grid {
     position: relative;
     display: grid; 
     min-height: 500px;
     width: max-content; 
-    
+    overflow: hidden;
 }
 
 .grid-cell {
     box-sizing: border-box;
     border-right: 1px solid #f0f0f0; 
     border-bottom: 1px solid #f0f0f0; 
-}
-
-.grid-cell:nth-child(24n) {
-    border-right: 2px solid #333;
 }
 
 #berth-divider-line {
@@ -256,28 +249,13 @@ h2#report-subtitle {
     top: 0; 
     height: 100%; 
     width: 3px; 
-    background-color: transparent;
-    border-left: 5px dashed #e53e3e;
-    border-right: none;
+    background-color: #e53e3e; 
+    border-left: 1px solid #9b2c2c; 
+    border-right: 1px solid #9b2c2c; 
     cursor: ew-resize; 
     z-index: 1; 
-    box-shadow: none;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3); 
     display: block;
-}
-
-.draggable-cc-line {
-    position: absolute;
-    width: 100%;
-    height: 3px; 
-    left: 0;
-    cursor: ns-resize; 
-    z-index: 50;
-    background-color: transparent; 
-}
-
-.draggable-cc-line {
-    border-top-style: dashed;
-    border-top-width: 5px;
 }
 
 
@@ -307,6 +285,7 @@ h2#report-subtitle {
     font-family: 'Consolas', 'Courier New', monospace;
     color: #333;
     overflow: hidden;
+    /* z-index: 2;  */
 }
 
 .ship-header {
@@ -320,6 +299,7 @@ h2#report-subtitle {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    text-align:left;
 }
 .ship-header span:first-child {
     margin-right: 10px;
@@ -329,7 +309,7 @@ h2#report-subtitle {
     position: absolute;
     top: 2px;
     right: 3px;
-    height: 20px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     background-color: rgba(255,255,255,0.7);
@@ -359,11 +339,12 @@ h2#report-subtitle {
     justify-content: space-between;
     align-items: center;
     padding: 0 8px;
-    font-size: 1.1em;
+    font-size: 0.9em;
     font-weight: bold;
-    color: black;
+    color: white;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     box-sizing: border-box;
+    /* z-index: 1;  */
 }
 
 .footer-left, .footer-center, .footer-right {
@@ -453,6 +434,7 @@ h2#report-subtitle {
 }
 .ship-header-text {
     line-height: 1.2;
+    text-align: left;
 }
 .ship-main-title {
     display: block;
@@ -473,16 +455,18 @@ h2#report-subtitle {
 }
 .bottom-legends-wrapper {
     display: flex;
-    gap: 5px;
+    gap: 20px;
     align-items: flex-start;
     width: max-content;
 }
 .description-remark-legend {
     display: flex;
     gap: 20px;
-    padding: 10px;
+    padding: 15px;
     border: 1px solid #ccc;
-    flex-basis: 10%;
+    /* flex-basis: 15%; */
+    /* width: 360px; */
+    width: 350px;
     background-color: #fdfdfd;
     flex-shrink: 0;
 }
@@ -498,7 +482,7 @@ h2#report-subtitle {
     list-style: none;
     padding: 0;
     margin: 0;
-    font-size: 12px;
+    font-size: 0.9em;
 }
 .description-remark-legend li {
     display: flex;
@@ -528,9 +512,10 @@ h2#report-subtitle {
     flex-wrap: wrap;
     border: 2px solid black;
     font-family: 'Arial Narrow', Arial, sans-serif;
-    font-size: 12px;
+    font-size: 17px;
     text-align: left;
-    flex-basis: 12%;
+    /* flex-basis: 12%; */
+    width: 290px;
     flex-shrink: 0;
 }
 .panel-style-legend .legend-item {
@@ -595,11 +580,12 @@ h2#report-subtitle {
 }
 
 .communication-log-container {
-    flex-basis: 450px;
-    min-width: 400px;
+    /* flex-basis: 600px; */
+    flex-basis: 20px;
+    min-width: 500px;
     border: 1px solid #ccc;
     background-color: #fdfdfd;
-    padding: 10px;
+    padding: 15px;
     font-family: Arial, sans-serif;
     flex-shrink: 0;
 }
@@ -618,7 +604,7 @@ h2#report-subtitle {
 #comm-log-table th,
 #comm-log-table td {
     border: 1px solid #000;
-    padding: 6px 4px;
+    padding: 6px 8px;
     text-align: left;
     vertical-align: top;
 }
@@ -634,11 +620,11 @@ h2#report-subtitle {
 }
 #comm-log-table th:first-child {
     text-align: center;
-    width: 10px;
+    width: 40px;
 }
 #comm-log-table td:first-child {
     text-align: center;
-    width: 10px;
+    width: 40px;
     background-color: #f0f0f0;
 }
 
@@ -671,27 +657,16 @@ h2#report-subtitle {
     border-right: 1px solid #dc3545;
     box-sizing: border-box;
     cursor: pointer;
-    writing-mode: vertical-lr; 
-    text-orientation: upright; 
-    white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 10px;
     font-size: 1.2em;
     font-weight: bold;
-    color: #5C4033;
+    color: #fff;
     text-shadow: 1px 1px 2px #000;
     writing-mode: vertical-rl;
-
 }
-
-.rest-block.pdf-vertical-text-hack {
-    writing-mode: initial !important;
-    text-orientation: initial !important;
-    line-height: 1.1em;
-}
-
 .rest-block:hover {
     background-color: rgba(255, 0, 0, 0.5);
 }
@@ -757,63 +732,3 @@ h2#report-subtitle {
     display: none !important;
 }
 
-.no-vessel-block {
-    position: absolute;
-    z-index: 14; 
-    border: 1px dashed #aaa;
-    box-sizing: border-box;
-    cursor: pointer;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-weight: bold;
-    color: #0000FF; 
-    font-size: 1.2em; 
-}
-
-.no-vessel-block span {
-    transform: rotate(-45deg); 
-    white-space: nowrap;
-    padding: 10px;
-    opacity: 0.7;
-}
-
-.qcc-checkbox-group {
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 20px; 
-    border: 1px solid #ccc; 
-    border-radius: 4px;
-    padding: 10px;
-}
-
-.qcc-option {
-    display: flex;
-    align-items: center;
-    gap: 5px; 
-}
-
-.qcc-option input[type="checkbox"] {
-    width: auto; 
-    width: 1.3em;
-    height: 1.3em;
-    cursor: pointer;
-}
-
-.qcc-option label {
-    font-weight: normal;
-    font-size: 1em;
-}
-
-.controls #week-date-picker {
-    font-size: 0.9em;
-    padding: 6px;
-    margin: 0 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    color: #333;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
