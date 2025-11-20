@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const KD_MARKERS = Array.from({ length: (650 - 330) / 10 + 1 }, (_, i) => 330 + i * 10);
-    const HOUR_WIDTH = 25;
+    const HOUR_WIDTH = 50;
     const KD_HEIGHT_UNIT = 40;
     const KD_MIN = Math.min(...KD_MARKERS);
     const PENDING_FORM_KEY = 'pendingShipForm';
@@ -63,110 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const berthDividerLine = document.getElementById('berth-divider-line');
     const currentTimeIndicator = document.getElementById('current-time-indicator');
 
-    // function renderShips() {
-    //     grid.querySelectorAll('.ship-wrapper').forEach(el => el.remove());
-
-    //     const weekStart = new Date(currentStartDate);
-    //     const weekEnd = new Date(weekStart);
-    //     weekEnd.setDate(weekEnd.getDate() + 7);
-
-    //     const visibleShips = shipSchedules.filter(ship => {
-    //         if (!ship.etaTime || !ship.endTime) {
-    //              console.warn("Skipping ship due to missing dates:", ship);
-    //              return false;
-    //         }
-    //         const shipETA = new Date(ship.etaTime);
-    //         const shipETD = new Date(ship.endTime);
-    //         if (isNaN(shipETA) || isNaN(shipETD)) {
-    //             console.warn("Skipping ship due to invalid date format:", ship);
-    //             return false;
-    //         }
-    //         return shipETA < weekEnd && shipETD > weekStart;
-    //     });
-
-    //     visibleShips.forEach((ship) => {
-    //         const shipIndex = shipSchedules.indexOf(ship);
-    //         const eta = new Date(ship.etaTime);
-    //         const etb = new Date(ship.startTime);
-    //         const etc = ship.etcTime ? new Date(ship.etcTime) : null;
-    //         const etd = new Date(ship.endTime);
-
-    //         if (isNaN(eta) || isNaN(etb) || isNaN(etd) || (etc && isNaN(etc)) ) {
-    //             console.warn("Skipping ship render due to invalid date after filter:", ship);
-    //             return; 
-    //         }
-
-    //         const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
-    //         const left = getHoursSinceWeekStart(eta) * HOUR_WIDTH;
-    //         const width = Math.max(((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2);
-    //         const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
-    //         const top = (ship.berthLocation - KD_MIN) * kdUnitPx;
-    //         const calculatedHeight = ship.length * kdUnitPx;
-    //         const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); 
-
-    //         const contentLeft = Math.max(((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, 0);
-    //         const contentWidth = Math.max(((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4); 
-
-    //         const finalTop = Math.max(top, 0);
-    //         const finalLeft = left; 
-
-    //         const company = ship.company ? ship.company.toUpperCase() : 'UNKNOWN';
-    //         let logoUrl = '', companyColor = '#718096';
-    //         switch(company) {
-    //             case 'MERATUS': logoUrl = './MRTS.png'; companyColor = '#000000'; break;
-    //             case 'TANTO':   logoUrl = './TANTO.png'; companyColor = '#000000'; break;
-    //             case 'SPIL':    logoUrl = './SPIL.png'; companyColor = '#000000'; break;
-    //             case 'CTP':     logoUrl = './CTP.png'; companyColor = '#000000'; break;
-    //             case 'PPNP':    logoUrl = './PPNP.png'; companyColor = '#000000'; break;
-    //             case 'LINE':    logoUrl = './Lines.jpg'; companyColor = '#000000'; break;
-    //             case 'ICON':    logoUrl = './icon.jpg'; companyColor = '#000000'; break;
-    //         }
-    //         const statusColors = {
-    //             "VESSEL ALONGSIDE": "#00c853",
-    //             "VESSEL ON PLOTTING": "#ffff00",
-    //             "VESSEL ON PLANNING": "#bfbfbf",
-    //             "VESSEL DEPART": "#9c27b0",
-    //             "CRANE/BERTH MAINTENANCE": "#ffc000",
-    //         };
-    //         const footerColor = statusColors[ship.status] || '#718096';
-    //         const bodyTextLines = [
-    //             `${ship.length || '?'}m / ${ship.draft || '?'} / ${ship.destPort || '-'} `,
-    //             `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
-    //             `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etc)} / ${formatDateTime(etd)}`,
-    //             `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
-    //             `${ship.qccName || '?'} `,
-    //         ];
-    //         const bodyText = bodyTextLines.join('\n').trim();
-    //         const wrapper = document.createElement('div');
-    //         wrapper.className = 'ship-wrapper';
-    //         wrapper.style.top = `${finalTop}px`;
-    //         wrapper.style.left = `${finalLeft}px`;
-    //         wrapper.style.width = `${width}px`;
-    //         wrapper.style.height = `${height}px`;
-    //         wrapper.innerHTML = `
-                
-    //             <div class="ship-content" style="left: ${contentLeft}px; width: ${contentWidth}px; border-color: ${companyColor};">
-    //                 <div class="ship-header">
-    //                     <div class="ship-header-text">
-    //                         <span class="ship-main-title">${company} ${ship.shipName || 'N/A'}</span>
-    //                         <span class="ship-sub-title">${ship.code || 'N/A'}</span>
-    //                     </div>
-    //                     ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none'; console.warn('Gagal load logo kapal:', this.src)"/>` : ''}
-    //                 </div>
-    //                 <div class="ship-body">${bodyText}</div>
-    //             </div>
-    //             <div class="ship-footer" style="background-color: ${footerColor};">
-    //                 <span class="footer-left"></span>
-    //                 <span class="footer-center">${ship.status || 'N/A'}</span>
-    //                 <span class="footer-right">BSH: ${ship.bsh || ''} / ${ship.berthSide || ''}</span>
-    //             </div>
-    //         `;
-
-    //         wrapper.addEventListener('dblclick', () => editShip(shipIndex));
-    //         wrapper.title = 'Double click untuk mengedit';
-    //         grid.appendChild(wrapper); 
-    //     });
-    // }
 
     function renderShips() {
         grid.querySelectorAll('.ship-wrapper').forEach(el => el.remove());
@@ -175,14 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
 
-        // Total lebar grid dalam pixel (7 hari * 24 jam * lebar per jam)
-        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH;
+        // BATAS MAKSIMAL: 7 hari * 24 jam * lebar per jam
+        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; 
 
         const visibleShips = shipSchedules.filter(ship => {
             if (!ship.etaTime || !ship.endTime) return false;
             const shipETA = new Date(ship.etaTime);
             const shipETD = new Date(ship.endTime);
-            // Filter dasar: hanya ambil kapal yang beririsan dengan minggu ini
+            // Filter: Hanya ambil yang waktunya beririsan dengan minggu ini
             return shipETA < weekEnd && shipETD > weekStart;
         });
 
@@ -197,62 +93,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
             
-            // 1. Hitung posisi asli (bisa negatif atau melebihi lebar grid)
+            // 1. Hitung Posisi Mentah (Bisa minus atau melebihi layar)
             let rawLeft = getHoursSinceWeekStart(eta) * HOUR_WIDTH;
             let rawWidth = ((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-            
-            // Pastikan lebar minimal (agar tetap terlihat jika sangat pendek)
-            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2);
+            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2); // Minimal lebar
 
-            // 2. Logika Pemotongan (Clipping) Wrapper Utama
-            let finalLeft = Math.max(0, rawLeft); // Jika negatif (mulai sebelum Senin), jadi 0
+            // 2. LOGIKA PEMOTONGAN (CLIPPING)
             
-            // Hitung berapa pixel yang terpotong di sebelah kiri
-            const leftCropAmount = finalLeft - rawLeft; 
+            // Potong Kiri: Jika start sebelum Senin 00:00, set ke 0
+            let finalLeft = Math.max(0, rawLeft);
+            
+            // Hitung berapa pixel yang terbuang di kiri (untuk geser konten dalam)
+            let leftCropAmount = finalLeft - rawLeft;
 
-            // Hitung lebar baru: (Posisi Kanan Asli) - (Posisi Kiri Baru)
-            // Dan pastikan posisi kanan tidak melebihi MAX_GRID_WIDTH
+            // Potong Kanan: Hitung ujung kanan, tapi jangan lebih dari MAX_GRID_WIDTH
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
+            
+            // Lebar Akhir: Ujung Kanan (yang sudah dilimit) - Ujung Kiri (yang sudah dilimit)
             let finalWidth = rightEdge - finalLeft;
 
-            // Jika setelah dipotong width <= 0, tidak perlu dirender
+            // Jika lebar <= 0 (tidak terlihat), skip render
             if (finalWidth <= 0) return;
 
-            // Hitung posisi vertikal (Top)
+
+            // --- Hitung Vertikal (Tetap sama) ---
             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
             const top = (ship.berthLocation - KD_MIN) * kdUnitPx;
-            const height = Math.max(ship.length * kdUnitPx, KD_HEIGHT_UNIT / 2);
+            const calculatedHeight = ship.length * kdUnitPx;
+            const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); 
             const finalTop = Math.max(top, 0);
 
-            // 3. Logika Inner Content (Bar Kapal / Garis putus-putus)
-            // Karena wrapper 'ship-wrapper' mungkin terpotong kiri, koordinat 'contentLeft' (relatif terhadap wrapper)
-            // harus digeser ke kiri sebesar jumlah yang terpotong (leftCropAmount).
+
+            // --- Logika Konten di Dalam Wrapper (Agar Bar Warna Tetap Akurat) ---
+            // Karena wrapper mungkin terpotong, posisi elemen dalam (ship-content) harus digeser
             
             let rawContentLeft = ((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             let rawContentWidth = ((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-            
-            // Geser posisi content sesuai potongan wrapper
+
+            // Geser posisi konten ke kiri sebesar jumlah wrapper yang terpotong
             let adjustedContentLeft = rawContentLeft - leftCropAmount;
-            
-            // Jangan biarkan contentLeft negatif (artinya ETB juga sebelum minggu ini dimulai)
-            // Jika ETB sebelum minggu mulai, contentLeft harus 0, dan width content juga harus dipotong
             let finalContentLeft = Math.max(0, adjustedContentLeft);
             
-            // Hitung seberapa banyak bagian awal content yang terpotong
+            // Jika konten juga terpotong di kiri, kurangi lebarnya
             let contentCropAmount = finalContentLeft - adjustedContentLeft;
-            
-            // Kurangi lebar content dengan potongan tersebut
             let finalContentWidth = rawContentWidth - contentCropAmount;
 
-            // Pastikan content width tidak melebihi sisa wrapper
+            // Pastikan konten tidak melebihi lebar wrapper yang sudah dipotong
             if (finalContentLeft + finalContentWidth > finalWidth) {
                 finalContentWidth = finalWidth - finalContentLeft;
             }
-
-            // Styling Warna & Logo
+            
+            // --- Styling & Render HTML ---
             const company = ship.company ? ship.company.toUpperCase() : 'UNKNOWN';
             let logoUrl = '', companyColor = '#718096';
-             switch(company) {
+            switch(company) {
                 case 'MERATUS': logoUrl = './MRTS.png'; companyColor = '#000000'; break;
                 case 'TANTO':   logoUrl = './TANTO.png'; companyColor = '#000000'; break;
                 case 'SPIL':    logoUrl = './SPIL.png'; companyColor = '#000000'; break;
@@ -270,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const footerColor = statusColors[ship.status] || '#718096';
             
-            // Pembuatan HTML
             const bodyTextLines = [
                 `${ship.length || '?'}m / ${ship.draft || '?'} / ${ship.destPort || '-'} `,
                 `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
@@ -278,13 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
                 `${ship.qccName || '?'} `,
             ];
-            const bodyText = bodyTextLines.join('\n').trim();
-            
+
             const wrapper = document.createElement('div');
             wrapper.className = 'ship-wrapper';
+            // Gunakan nilai final yang sudah dipotong
             wrapper.style.top = `${finalTop}px`;
             wrapper.style.left = `${finalLeft}px`;
-            wrapper.style.width = `${finalWidth}px`; // Lebar yang sudah dipotong
+            wrapper.style.width = `${finalWidth}px`; 
             wrapper.style.height = `${height}px`;
 
             wrapper.innerHTML = `
@@ -296,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none';"/>` : ''}
                     </div>
-                    <div class="ship-body">${bodyText}</div>
+                    <div class="ship-body">${bodyTextLines.join('\n').trim()}</div>
                 </div>
                 <div class="ship-footer" style="background-color: ${footerColor};">
                     <span class="footer-left"></span>
@@ -311,62 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // function renderMaintenance() {
-    //     grid.querySelectorAll('.maintenance-block, .no-vessel-block').forEach(el => el.remove());
-        
-    //     const weekStart = new Date(currentStartDate);
-    //     const weekEnd = new Date(weekStart);
-    //     weekEnd.setDate(weekEnd.getDate() + 7);
-    //     const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
-    //     const visibleMaintenance = maintenanceSchedules.filter(item => {
-    //         if (!item.startTime || !item.endTime) return false;
-    //         const startTime = new Date(item.startTime);
-    //         const endTime = new Date(item.endTime);
-    //         if (isNaN(startTime) || isNaN(endTime)) return false;
-    //         return startTime < weekEnd && endTime > weekStart;
-    //     });
-
-    //     visibleMaintenance.forEach((item, index) => {
-    //         const itemIndex = maintenanceSchedules.indexOf(item);
-    //         const startTime = new Date(item.startTime);
-    //         const endTime = new Date(item.endTime);
-    //         const left = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
-    //         const width = Math.max(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 2);
-
-    //         const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
-    //         const top = (item.startKd - KD_MIN) * kdUnitPx;
-
-    //         const maintenanceLength = Math.max((item.endKd - item.startKd), 10); 
-    //         const height = Math.max(maintenanceLength * kdUnitPx, KD_HEIGHT_UNIT / 2); 
-
-    //         const finalTop = Math.max(top, 0);
-    //         const finalLeft = Math.max(left, 0);
-
-    //         if (item.type === 'no-vessel') {
-    //             const block = document.createElement('div');
-    //             block.className = 'no-vessel-block'; 
-    //             block.style.top = `${finalTop}px`;
-    //             block.style.left = `${finalLeft}px`;
-    //             block.style.width = `${width}px`;
-    //             block.style.height = `${height}px`;
-    //             block.innerHTML = `<span>No Vessel<br>Free for Maintenance</span>`; 
-    //             block.title = `Area Kosong: ${item.keterangan} (Double click untuk mengedit)`;
-    //             block.addEventListener('dblclick', () => editMaintenance(itemIndex)); 
-    //             grid.appendChild(block);
-    //         } else {
-    //                 const block = document.createElement('div');
-    //                 block.className = 'maintenance-block';
-    //                 block.style.top = `${finalTop}px`;
-    //                 block.style.left = `${finalLeft}px`;
-    //                 block.style.width = `${width}px`;
-    //                 block.style.height = `${height}px`;
-    //                 block.textContent = item.keterangan;
-    //                 block.title = `Maintenance: ${item.keterangan} (Double click untuk mengedit)`;
-    //                 block.addEventListener('dblclick', () => editMaintenance(itemIndex));
-    //                 grid.appendChild(block);
-    //         }
-    //     });
-    // }
 
     function renderMaintenance() {
         grid.querySelectorAll('.maintenance-block, .no-vessel-block').forEach(el => el.remove());
@@ -375,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
         
-        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH;
+        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; // Limit Grid
 
         const visibleMaintenance = maintenanceSchedules.filter(item => {
             if (!item.startTime || !item.endTime) return false;
@@ -390,12 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const endTime = new Date(item.endTime);
             const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
 
-            // Hitung posisi mentah
             let rawLeft = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
             let rawWidth = ((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2);
-
-            // CLIPPING: Potong kiri dan kanan
+            
+            // LOGIKA PEMOTONGAN
             let finalLeft = Math.max(0, rawLeft);
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
             let finalWidth = rightEdge - finalLeft;
@@ -409,9 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalTop = Math.max(top, 0);
 
             const block = document.createElement('div');
-            // Tentukan tipe class
             block.className = (item.type === 'no-vessel') ? 'no-vessel-block' : 'maintenance-block';
-            
             block.style.top = `${finalTop}px`;
             block.style.left = `${finalLeft}px`;
             block.style.width = `${finalWidth}px`;
@@ -424,55 +257,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 block.textContent = item.keterangan;
                 block.title = `Maintenance: ${item.keterangan}`;
             }
-            
             block.addEventListener('dblclick', () => editMaintenance(itemIndex));
             grid.appendChild(block);
         });
     }
 
-    // function renderRestTimes() {
-    //     grid.querySelectorAll('.rest-block').forEach(el => el.remove());
-    //     const weekStart = new Date(currentStartDate);
-    //     const weekEnd = new Date(weekStart);
-    //     weekEnd.setDate(weekEnd.getDate() + 7);
-    //     const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
-    //     const visibleRestTimes = restSchedules.filter(item => {
-    //          if (!item.startTime || !item.endTime) return false;
-    //         const startTime = new Date(item.startTime);
-    //         const endTime = new Date(item.endTime);
-    //          if (isNaN(startTime) || isNaN(endTime)) return false;
-    //         return startTime < weekEnd && endTime > weekStart;
-    //     });
-    //     visibleRestTimes.forEach(item => {
-    //         const itemIndex = restSchedules.indexOf(item);
-    //         const startTime = new Date(item.startTime);
-    //         const endTime = new Date(item.endTime);
-    //         const left = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
-    //         const width = Math.max(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH, HOUR_WIDTH / 4);
-
-    //          const finalLeft = Math.max(left, 0);
-
-    //         const block = document.createElement('div');
-    //         block.className = 'rest-block';
-    //         block.style.top = '0px';
-    //         block.style.height = grid.style.height; 
-    //         block.style.left = `${finalLeft}px`;
-    //         block.style.width = `${width}px`;
-    //         block.textContent = item.keterangan || 'BREAK';
-    //         block.title = `${item.keterangan} (Double click untuk mengedit)`;
-    //         block.addEventListener('dblclick', () => editRestTime(itemIndex));
-    //         grid.appendChild(block);
-    //     });
-    // }
-
+    
     function renderRestTimes() {
         grid.querySelectorAll('.rest-block').forEach(el => el.remove());
-        
         const weekStart = new Date(currentStartDate);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
         
-        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH;
+        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; // Limit Grid
 
         const visibleRestTimes = restSchedules.filter(item => {
              if (!item.startTime || !item.endTime) return false;
@@ -480,19 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const endTime = new Date(item.endTime);
             return startTime < weekEnd && endTime > weekStart;
         });
-
         visibleRestTimes.forEach(item => {
             const itemIndex = restSchedules.indexOf(item);
             const startTime = new Date(item.startTime);
             const endTime = new Date(item.endTime);
             const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
             
-            // Hitung posisi mentah
             let rawLeft = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
             let rawWidth = ((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 4); // Minimal width kecil
 
-            // CLIPPING: Potong kiri dan kanan
+            // LOGIKA PEMOTONGAN
             let finalLeft = Math.max(0, rawLeft);
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
             let finalWidth = rightEdge - finalLeft;
@@ -1474,5 +1268,3 @@ if (savedQCCs) {
     initialize();
 
 });
-
-
