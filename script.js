@@ -903,7 +903,7 @@ if (savedQCCs) {
                  console.warn("[PDF Export] WARNING: Logo might be hidden!");
             }
 
-            const scale = 2;
+            const scale = 1;
             const commonOptions = {
                 scale: scale,
                 useCORS: true,
@@ -948,7 +948,7 @@ if (savedQCCs) {
 
             let yOffset = 0;
             for (const canvas of canvases) {
-                const imgData = canvas.toDataURL('image/png'); 
+                const imgData = canvas.toDataURL('image/jpeg', 0.75);
                 const imgHeightMM = (canvas.height / scale / 96) * 25.4;
                 const imgWidthMM = (canvas.width / scale / 96) * 25.4;
                 doc.addImage(imgData, 'PNG', 0, yOffset, imgWidthMM, imgHeightMM);
@@ -1268,4 +1268,5 @@ if (savedQCCs) {
     initialize();
 
 });
+
 
