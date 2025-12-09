@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'CC01': '#d14c62ff', 
         'CC02': '#0000FF', 
         'CC03': '#17A2B8', 
-        'CC04': '#b5a02aff'  
+        'CC04': '#b5a02aff'  
     };
 
     const grid = document.getElementById('grid');
@@ -124,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalTop = Math.max(top, 0);
 
 
-            // --- Logika Konten di Dalam Wrapper (Agar Bar Warna Tetap Akurat) ---
-            // Karena wrapper mungkin terpotong, posisi elemen dalam (ship-content) harus digeser
+            // --- Logika Konten di Dalam Wrapper ---
+            // Area Konten (Kotak Putih) biasanya mewakili waktu operasional (ETB ke ETD)
             
             let rawContentLeft = ((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             let rawContentWidth = ((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
@@ -172,6 +172,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 `${ship.qccName || '?'} `,
             ];
 
+            // --- LOGIKA BARU GARIS PUTUS-PUTUS (QCC) ---
+            // Garis ini berada di dalam .ship-content (yang sudah merepresentasikan area ETB-ETD)
+            // Jadi width 100% dari konten tersebut.
+            let ccLinesHTML = '';
+            const shipQCCs = ship.qccName ? ship.qccName.split(' & ') : [];
+            
+            if (shipQCCs.length > 0) {
+                let linesContent = '';
+                shipQCCs.forEach(qcc => {
+                    let color = '#333'; 
+                    if (qcc.includes('01')) color = '#d14c62ff'; 
+                    else if (qcc.includes('02')) color = '#0000FF'; 
+                    else if (qcc.includes('03')) color = '#17A2B8'; 
+                    else if (qcc.includes('04')) color = '#b5a02aff'; 
+                    
+                    linesContent += `<div class="cc-line-item" style="border-color: ${color};"></div>`;
+                });
+
+                // Bungkus garis dalam container
+                // Karena berada di dalam ship-content (yang sudah ETB-ETD), pakai width 100%
+                ccLinesHTML = `
+                    <div class="cc-lines-container">
+                        ${linesContent}
+                    </div>
+                `;
+            }
+            // -------------------------------------------
+
             const wrapper = document.createElement('div');
             wrapper.className = 'ship-wrapper';
             // Gunakan nilai final yang sudah dipotong
@@ -180,8 +208,32 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.style.width = `${finalWidth}px`; 
             wrapper.style.height = `${height}px`;
 
+            // wrapper.innerHTML = `
+            //     <div class="ship-content" style="left: ${finalContentLeft}px; width: ${finalContentWidth}px; border-color: ${companyColor};">
+            //         <div class="ship-header">
+            //             <div class="ship-header-text">
+            //                 <span class="ship-main-title">${company} ${ship.shipName || 'N/A'}</span>
+            //                 <span class="ship-sub-title">${ship.code || 'N/A'}</span>
+            //             </div>
+            //             ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none';"/>` : ''}
+            //         </div>
+                    
+            //         ${ccLinesHTML}
+
+            //         <div class="ship-body">${bodyTextLines.join('\n').trim()}</div>
+            //     </div>
+            //     <div class="ship-footer" style="background-color: ${footerColor};">
+            //         <span class="footer-left"></span>
+            //         <span class="footer-center">${ship.status || 'N/A'}</span>
+            //         <span class="footer-right">BSH: ${ship.bsh || ''} / ${ship.berthSide || ''}</span>
+            //     </div>
+            // `;
+
+            // ... (kode sebelumnya)
+
             wrapper.innerHTML = `
                 <div class="ship-content" style="left: ${finalContentLeft}px; width: ${finalContentWidth}px; border-color: ${companyColor};">
+                    
                     <div class="ship-header">
                         <div class="ship-header-text">
                             <span class="ship-main-title">${company} ${ship.shipName || 'N/A'}</span>
@@ -189,15 +241,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none';"/>` : ''}
                     </div>
-                    <div class="ship-body">${bodyTextLines.join('\n').trim()}</div>
+                    
+                    <div class="ship-body">
+                        <div>${bodyTextLines.join('\n').trim()}</div>
+                        
+                        ${ccLinesHTML}
+                    </div>
+
                 </div>
+                
                 <div class="ship-footer" style="background-color: ${footerColor};">
                     <span class="footer-left"></span>
                     <span class="footer-center">${ship.status || 'N/A'}</span>
                     <span class="footer-right">BSH: ${ship.bsh || ''} / ${ship.berthSide || ''}</span>
                 </div>
             `;
-
+            
             wrapper.addEventListener('dblclick', () => editShip(shipIndex));
             wrapper.title = 'Double click untuk mengedit';
             grid.appendChild(wrapper); 
@@ -476,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timeIndicator.id = 'current-time-indicator';
         grid.appendChild(timeIndicator);
 
-        createDraggableCCLines();
+        // createDraggableCCLines();
 
         const kdUnitPx = KD_HEIGHT_UNIT; 
         KD_MARKERS.forEach(kd => {
@@ -494,14 +553,14 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'BERTH 1', startKd: 490, endKd: 650, ccs: ['CC02', 'CC01'] }
         ];
 
-     
+      
         const ccColors = {
             'CC01': '#d14c62ff', 
             'CC02': '#0000FF', 
             'CC03': '#17A2B8', 
-            'CC04': '#b5a02aff'  
+            'CC04': '#b5a02aff'  
         };
-     
+      
 
         berths.forEach(berth => {
             const berthLabelContainer = document.createElement('div');
@@ -510,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const innerLabelWrapper = document.createElement('div');
             innerLabelWrapper.className = 'berth-label'; 
 
-       
+        
             const kdStepHeight = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); 
             const top = (berth.startKd - KD_MIN) * kdStepHeight;
             const height = (berth.endKd - berth.startKd) * kdStepHeight;
@@ -769,30 +828,29 @@ if (savedQCCs) {
         const gridContainer = document.querySelector('.grid-container');
         const legendsWrapper = document.querySelector('.bottom-legends-wrapper');
 
+        // --- VALIDASI LOGO ---
         if (!pelindoLogoInHeader) {
-            console.error("[PDF Export] ERROR: Elemen logo Pelindo (.pdf-logo) tidak ditemukan di dalam #pdf-header!");
-            alert("Error: Elemen logo Pelindo tidak ditemukan. Periksa struktur HTML Anda di bagian <div id='pdf-header'>.");
+            console.error("[PDF Export] ERROR: Elemen logo Pelindo tidak ditemukan!");
+            alert("Error: Elemen logo Pelindo tidak ditemukan.");
             exportBtn.disabled = false;
-             exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
+            exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
             return;
-        } else {
-             console.log("[PDF Export] Elemen logo Pelindo ditemukan.");
-             console.log("[PDF Export] Path src logo Pelindo:", pelindoLogoInHeader.src);
         }
 
+        // --- UI UPDATE ---
         const originalBtnHTML = exportBtn.innerHTML;
         exportBtn.disabled = true;
-        exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengekspor...';
+        exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kompresi...'; // Feedback user
         pdfOptions.style.display = 'none';
 
         if (pelindoLogoInHeader) {
-            console.log("[PDF Export] Setting crossOrigin='anonymous' for Pelindo logo.");
             pelindoLogoInHeader.crossOrigin = "anonymous";
         }
 
         mainHeader.classList.add('hide-for-pdf'); 
+        
+        // --- TEXT HACK (REST BLOCKS) ---
         const restBlocks = document.querySelectorAll('.rest-block');
-
         const originalRestBlockHTML = []; 
         restBlocks.forEach(block => {
             originalRestBlockHTML.push(block.innerHTML); 
@@ -804,6 +862,7 @@ if (savedQCCs) {
             }
         });
 
+        // --- SIMPAN STATE ASLI ---
         const oldHeaderWidth = pdfHeader.style.width;
         const oldMapWidth = berthMapContainer.style.width;
         const oldLegendsWidth = legendsScrollContainer.style.width;
@@ -813,9 +872,9 @@ if (savedQCCs) {
         const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
         const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block';
 
-        const oldYAxisPosition = yAxisColumn.style.position;
-        const oldYAxisLeft = yAxisColumn.style.left;
-        const oldYAxisZIndex = yAxisColumn.style.zIndex;
+        const oldYAxisPosition = yAxisColumn ? yAxisColumn.style.position : '';
+        const oldYAxisLeft = yAxisColumn ? yAxisColumn.style.left : '';
+        const oldYAxisZIndex = yAxisColumn ? yAxisColumn.style.zIndex : '';
 
         let targetScrollLeft = 0;
 
@@ -824,22 +883,17 @@ if (savedQCCs) {
             let captureWidth;
             let captureStartX = 0;
 
-            const mapFullWidth = gridContainer.scrollWidth + yAxisColumn.offsetWidth;
+            const mapFullWidth = gridContainer.scrollWidth + (yAxisColumn ? yAxisColumn.offsetWidth : 0);
             const legendsFullWidth = legendsWrapper.scrollWidth;
             const fullWidth = Math.max(mapFullWidth, legendsFullWidth);
 
             const hourWidth = HOUR_WIDTH;
             const dayWidth = 24 * hourWidth;
-            const yAxisWidth = yAxisColumn.offsetWidth;
-            const restBlocks = document.querySelectorAll('.rest-block');
+            const yAxisWidth = yAxisColumn ? yAxisColumn.offsetWidth : 0;
 
+            // --- LOGIKA DAILY VS WEEKLY ---
             if (type === 'daily') {
-                console.log("[PDF Export] Preparing for daily export...");
-
-                
                 let today = new Date(); today.setHours(0,0,0,0);
-                let tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-                
                 let selectedDay = new Date(currentStartDate);
                 let nextDay = new Date(selectedDay);
                 nextDay.setDate(selectedDay.getDate() + 1);
@@ -847,23 +901,17 @@ if (savedQCCs) {
                 pdfDateRangeStr = `${formatDateForPDF(selectedDay)} to ${formatDateForPDF(nextDay)}`;
                 pdfFileName = `Berth-Allocation-Harian-${selectedDay.toISOString().split('T')[0]}.pdf`;
 
-                let weekStart = new Date(currentStartDate); weekStart.setHours(0,0,0,0);
-                
-                let dayDiff = 0; 
-
-                console.log(`[PDF Export] Daily - Day difference from week start: ${dayDiff}`);
-
+                let dayDiff = 0; // Sesuaikan logic ini jika ingin pilih hari spesifik
                 captureWidth = yAxisWidth + (2 * dayWidth); 
                 targetScrollLeft = dayDiff * dayWidth; 
                 captureStartX = targetScrollLeft; 
-                console.log(`[PDF Export] Daily - captureWidth: ${captureWidth}px, targetScrollLeft: ${targetScrollLeft}px, captureStartX: ${captureStartX}px`);
 
                 gridScroll.style.overflowX = 'hidden';
                 gridScroll.scrollLeft = targetScrollLeft;
                 legendsScrollContainer.scrollLeft = 0;
 
             } else { 
-                console.log("[PDF Export] Preparing for weekly export...");
+                // WEEKLY
                 let startDate = new Date(currentStartDate);
                 let endDate = new Date(startDate);
                 endDate.setDate(startDate.getDate() + 6);
@@ -873,43 +921,41 @@ if (savedQCCs) {
                 captureWidth = fullWidth;
                 captureStartX = 0;
                 targetScrollLeft = 0;
-                console.log(`[PDF Export] Weekly - captureWidth: ${captureWidth}px`);
+                
                 gridScroll.style.overflowX = 'visible';
                 gridScroll.scrollLeft = 0;
                 legendsScrollContainer.scrollLeft = 0;
             }
 
+            // --- SET LEBAR UNTUK CAPTURE ---
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
             legendsScrollContainer.style.width = (type === 'daily' ? `${legendsFullWidth}px` : `${captureWidth}px`);
-            pdfHeader.querySelector('.pdf-date-range').textContent = pdfDateRangeStr;
+            
+            const dateRangeEl = pdfHeader.querySelector('.pdf-date-range');
+            if(dateRangeEl) dateRangeEl.textContent = pdfDateRangeStr;
+            
             pdfHeader.style.display = 'flex'; 
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = 'block';
             if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = 'block'; 
 
-            if (type === 'weekly') {
-                console.log("[PDF Export] Mengubah .y-axis-column dari sticky ke relative untuk capture mingguan.");
+            if (type === 'weekly' && yAxisColumn) {
                 yAxisColumn.style.position = 'relative'; 
                 yAxisColumn.style.left = 'auto';
                 yAxisColumn.style.zIndex = '18';
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000)); 
-            console.log("[PDF Export] Delay finished. Starting canvas capture...");
+            await new Promise(resolve => setTimeout(resolve, 800)); // Delay agar rendering CSS selesai
 
-            const logoStyles = window.getComputedStyle(pelindoLogoInHeader);
-            console.log("[PDF Export] Logo computed display:", logoStyles.display, "visibility:", logoStyles.visibility);
-            if (logoStyles.display === 'none' || logoStyles.visibility === 'hidden') {
-                 console.warn("[PDF Export] WARNING: Logo might be hidden!");
-            }
-
-            const scale = 1;
+            // --- KONFIGURASI HTML2CANVAS OPTIMAL (UKURAN KECIL) ---
+            // Scale 1 (Default) cukup untuk PDF A4/A3, Scale 2 membuat file sangat besar.
+            const scale = 1; 
+            
             const commonOptions = {
                 scale: scale,
                 useCORS: true,
-                y: 0,
-                scrollY: 0,
-                windowWidth: captureWidth
+                logging: false, // Matikan log biar cepat
+                backgroundColor: '#ffffff' // PENTING: JPEG butuh background putih
             };
 
             const optionsBerthMap = {
@@ -925,54 +971,57 @@ if (savedQCCs) {
                 height: legendsScrollContainer.scrollHeight,
                 x: 0, 
             };
-            const optionsHeader = { ...commonOptions, width: captureWidth, height: pdfHeader.offsetHeight, x:0 };
+            const optionsHeader = { 
+                ...commonOptions, 
+                width: captureWidth, 
+                height: pdfHeader.offsetHeight, 
+                x: 0 
+            };
 
-            console.log("[PDF Export] Capturing header...");
+            // --- CAPTURE ---
             const canvasHeader = await html2canvas(pdfHeader, optionsHeader);
-            console.log("[PDF Export] Header captured. Capturing Berth Map Container...");
             const canvasMapCombined = await html2canvas(berthMapContainer, optionsBerthMap);
-            console.log("[PDF Export] Berth Map Container captured. Capturing Legends...");
             const canvasLegends = await html2canvas(legendsScrollContainer, optionsLegends);
-            console.log("[PDF Export] Legends captured.");
-            console.log("[PDF Export] Combining canvases into PDF...");
 
             const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
+            
+            // Hitung Ukuran PDF
+            // 96 DPI adalah standar web. 25.4 mm = 1 inch
             const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; 
             const totalPdfHeightMM = canvases.reduce((sum, c) => sum + (c.height / scale / 96) * 25.4, 0);
 
             const doc = new jsPDF({
                 orientation: pdfWidthMM > totalPdfHeightMM ? 'landscape' : 'portrait',
                 unit: 'mm',
-                format: [pdfWidthMM, totalPdfHeightMM]
+                format: [pdfWidthMM, totalPdfHeightMM],
+                compress: true // Aktifkan kompresi internal jsPDF
             });
 
             let yOffset = 0;
             for (const canvas of canvases) {
-                const imgData = canvas.toDataURL('image/jpeg', 0.75);
+                // --- PENTING: UBAH KE JPEG UNTUK UKURAN KECIL ---
+                // Format: 'image/jpeg', Quality: 0.75 (75%)
+                const imgData = canvas.toDataURL('image/jpeg', 0.75); 
+                
                 const imgHeightMM = (canvas.height / scale / 96) * 25.4;
                 const imgWidthMM = (canvas.width / scale / 96) * 25.4;
-                doc.addImage(imgData, 'PNG', 0, yOffset, imgWidthMM, imgHeightMM);
+                
+                // Parameter 'FAST' mempercepat kompresi dan mengurangi ukuran
+                doc.addImage(imgData, 'JPEG', 0, yOffset, imgWidthMM, imgHeightMM, undefined, 'FAST');
                 yOffset += imgHeightMM;
             }
 
-            console.log("[PDF Export] Saving PDF...");
             doc.save(pdfFileName);
-            console.log("[PDF Export] PDF saved successfully.");
 
         } catch (error) {
-            console.error("[PDF Export] Error during export:", error);
-            if (error.message.indexOf('Daily export failed') === -1) {
-                alert("Maaf, terjadi kesalahan saat membuat file PDF. Cek console (F12) untuk detail error.");
-            }
+            console.error("[PDF Export] Error:", error);
+            alert("Terjadi kesalahan saat membuat file PDF.");
         } finally {
-            console.log("[PDF Export] Cleaning up...");
+            // --- CLEANUP (KEMBALIKAN TAMPILAN) ---
             mainHeader.classList.remove('hide-for-pdf');
 
-            const restBlocksCleanup = document.querySelectorAll('.rest-block');
-            
-            restBlocksCleanup.forEach((block, index) => {
+            restBlocks.forEach((block, index) => {
                 if (originalRestBlockHTML[index] !== undefined) {
-
                     block.innerHTML = originalRestBlockHTML[index]; 
                 }
                 block.classList.remove('pdf-vertical-text-hack'); 
@@ -985,17 +1034,18 @@ if (savedQCCs) {
             gridScroll.style.overflowX = oldGridScrollOverflow;
             gridScroll.scrollLeft = oldGridScrollLeft;
             legendsScrollContainer.scrollLeft = oldLegendsScrollLeft;
-            if(currentTimeIndicator) currentTimeIndicator.style.display = oldTimeIndicatorDisplay; 
-            if(berthDividerLine) berthDividerLine.style.display = oldDividerDisplay; 
+            
+            if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = oldTimeIndicatorDisplay; 
+            if(berthDividerLinePDF) berthDividerLinePDF.style.display = oldDividerDisplay; 
 
-            yAxisColumn.style.position = oldYAxisPosition;
-            yAxisColumn.style.left = oldYAxisLeft;
-            yAxisColumn.style.zIndex = oldYAxisZIndex;
-            console.log("[PDF Export] Mengembalikan .y-axis-column ke sticky.");
+            if (yAxisColumn) {
+                yAxisColumn.style.position = oldYAxisPosition;
+                yAxisColumn.style.left = oldYAxisLeft;
+                yAxisColumn.style.zIndex = oldYAxisZIndex;
+            }
 
             exportBtn.disabled = false;
             exportBtn.innerHTML = originalBtnHTML;
-            console.log("[PDF Export] Cleanup finished.");
         }
     }
 
@@ -1232,7 +1282,7 @@ if (savedQCCs) {
 
         let activeDraggableLine = null;
 
-       
+        
         grid.addEventListener('mousedown', (e) => {
             if (e.target.classList.contains('draggable-cc-line')) {
                 activeDraggableLine = e.target;
@@ -1261,12 +1311,10 @@ if (savedQCCs) {
         document.addEventListener('mouseup', () => {
             activeDraggableLine = null; 
         });
-     
+      
 
     } 
     
     initialize();
 
 });
-
-
