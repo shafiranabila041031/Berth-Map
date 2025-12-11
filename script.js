@@ -99,20 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
             rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2); // Minimal lebar
 
             // 2. LOGIKA PEMOTONGAN (CLIPPING)
-            
-            // Potong Kiri: Jika start sebelum Senin 00:00, set ke 0
             let finalLeft = Math.max(0, rawLeft);
-            
-            // Hitung berapa pixel yang terbuang di kiri (untuk geser konten dalam)
             let leftCropAmount = finalLeft - rawLeft;
-
-            // Potong Kanan: Hitung ujung kanan, tapi jangan lebih dari MAX_GRID_WIDTH
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
-            
-            // Lebar Akhir: Ujung Kanan (yang sudah dilimit) - Ujung Kiri (yang sudah dilimit)
             let finalWidth = rightEdge - finalLeft;
-
-            // Jika lebar <= 0 (tidak terlihat), skip render
             if (finalWidth <= 0) return;
 
 
@@ -125,35 +115,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             // --- Logika Konten di Dalam Wrapper ---
-            // Area Konten (Kotak Putih) biasanya mewakili waktu operasional (ETB ke ETD)
-            
             let rawContentLeft = ((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             let rawContentWidth = ((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-
-            // Geser posisi konten ke kiri sebesar jumlah wrapper yang terpotong
             let adjustedContentLeft = rawContentLeft - leftCropAmount;
             let finalContentLeft = Math.max(0, adjustedContentLeft);
-            
-            // Jika konten juga terpotong di kiri, kurangi lebarnya
             let contentCropAmount = finalContentLeft - adjustedContentLeft;
             let finalContentWidth = rawContentWidth - contentCropAmount;
-
-            // Pastikan konten tidak melebihi lebar wrapper yang sudah dipotong
             if (finalContentLeft + finalContentWidth > finalWidth) {
                 finalContentWidth = finalWidth - finalContentLeft;
             }
             
-            // --- Styling & Render HTML ---
+            // --- Border untuk Jadwal Kapal ---
             const company = ship.company ? ship.company.toUpperCase() : 'UNKNOWN';
             let logoUrl = '', companyColor = '#718096';
             switch(company) {
-                case 'MERATUS': logoUrl = './MRTS.png'; companyColor = '#000000'; break;
-                case 'TANTO':   logoUrl = './TANTO.png'; companyColor = '#000000'; break;
-                case 'SPIL':    logoUrl = './SPIL.png'; companyColor = '#000000'; break;
-                case 'CTP':     logoUrl = './CTP.png'; companyColor = '#000000'; break;
-                case 'PPNP':    logoUrl = './PPNP.png'; companyColor = '#000000'; break;
-                case 'LINE':    logoUrl = './Lines.jpg'; companyColor = '#000000'; break;
-                case 'ICON':    logoUrl = './icon.jpg'; companyColor = '#000000'; break;
+                case 'MERATUS': logoUrl = './MRTS.png'; companyColor = '#001F5B'; break;
+                case 'TANTO':   logoUrl = './TANTO.png'; companyColor = '#00AEEF'; break;
+                case 'SPIL':    logoUrl = './SPIL.png'; companyColor = '#3BB54A'; break;
+                case 'CTP':     logoUrl = './CTP.png'; companyColor = '#B65A0A'; break;
+                case 'PPNP':    logoUrl = './PPNP.png'; companyColor = '#FF0000'; break;
+                case 'LINE':    logoUrl = './Lines.jpg'; companyColor = '#e38111ff'; break;
+                case 'ICON':    logoUrl = './icon.jpg'; companyColor = '#dd15abff'; break;
             }
             const statusColors = {
                 "VESSEL ALONGSIDE": "#00c853",
@@ -169,12 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
                 `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etc)} / ${formatDateTime(etd)}`,
                 `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
-                `${ship.qccName || '?'} `,
+                // `${ship.qccName || '?'} `,
             ];
 
             // --- LOGIKA BARU GARIS PUTUS-PUTUS (QCC) ---
-            // Garis ini berada di dalam .ship-content (yang sudah merepresentasikan area ETB-ETD)
-            // Jadi width 100% dari konten tersebut.
             let ccLinesHTML = '';
             const shipQCCs = ship.qccName ? ship.qccName.split(' & ') : [];
             
@@ -187,49 +167,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (qcc.includes('03')) color = '#17A2B8'; 
                     else if (qcc.includes('04')) color = '#b5a02aff'; 
                     
-                    linesContent += `<div class="cc-line-item" style="border-color: ${color};"></div>`;
+                    linesContent += `
+                        <div style="display: flex; flex-direction: column; width: 100%; margin-bottom: 4px;">
+                            <span style="color: #333; margin-bottom: 2px;">${qcc}</span>
+                            <div class="cc-line-item" style="border-top: 2px dashed ${color}; width: 100%; height: 0px;"></div>
+                        </div>
+                    `;
                 });
-
-                // Bungkus garis dalam container
-                // Karena berada di dalam ship-content (yang sudah ETB-ETD), pakai width 100%
                 ccLinesHTML = `
-                    <div class="cc-lines-container">
+                    <div class="cc-lines-container" style="display: flex; flex-direction: column; width: 100%; margin-top: 5px;">
                         ${linesContent}
                     </div>
                 `;
             }
-            // -------------------------------------------
 
             const wrapper = document.createElement('div');
             wrapper.className = 'ship-wrapper';
-            // Gunakan nilai final yang sudah dipotong
             wrapper.style.top = `${finalTop}px`;
             wrapper.style.left = `${finalLeft}px`;
             wrapper.style.width = `${finalWidth}px`; 
             wrapper.style.height = `${height}px`;
-
-            // wrapper.innerHTML = `
-            //     <div class="ship-content" style="left: ${finalContentLeft}px; width: ${finalContentWidth}px; border-color: ${companyColor};">
-            //         <div class="ship-header">
-            //             <div class="ship-header-text">
-            //                 <span class="ship-main-title">${company} ${ship.shipName || 'N/A'}</span>
-            //                 <span class="ship-sub-title">${ship.code || 'N/A'}</span>
-            //             </div>
-            //             ${logoUrl ? `<img src="${logoUrl}" class="ship-logo" alt="${company} logo" onerror="this.style.display='none';"/>` : ''}
-            //         </div>
-                    
-            //         ${ccLinesHTML}
-
-            //         <div class="ship-body">${bodyTextLines.join('\n').trim()}</div>
-            //     </div>
-            //     <div class="ship-footer" style="background-color: ${footerColor};">
-            //         <span class="footer-left"></span>
-            //         <span class="footer-center">${ship.status || 'N/A'}</span>
-            //         <span class="footer-right">BSH: ${ship.bsh || ''} / ${ship.berthSide || ''}</span>
-            //     </div>
-            // `;
-
-            // ... (kode sebelumnya)
 
             wrapper.innerHTML = `
                 <div class="ship-content" style="left: ${finalContentLeft}px; width: ${finalContentWidth}px; border-color: ${companyColor};">
@@ -1236,7 +1193,7 @@ if (savedQCCs) {
 
         if (clearDataBtn) {
             clearDataBtn.addEventListener('click', () => {
-                if (confirm('Anda yakin ingin menghapus SEMUA data jadwal kapal, maintenance, istirahat, DAN communication log?')) {
+                if (confirm('Anda yakin ingin menghapus semua data jadwal kapal, maintenance, istirahat dan communication log?')) {
                     shipSchedules = [];
                     maintenanceSchedules = [];
                     restSchedules = [];
