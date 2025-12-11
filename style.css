@@ -841,17 +841,16 @@ h2#report-subtitle {
 
 /* 2. Ubah .cc-lines-container menjadi Relative */
 .cc-lines-container {
-    position: relative; /* Ikuti aliran teks, jangan mengambang */
+    position: relative; 
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 4px; /* Jarak antar garis */
     pointer-events: none; 
     z-index: 5;
-    
-    /* Mengatur jarak */
-    margin-top: 5px; /* Jarak dari tulisan QCC di atasnya */
-    margin-left: -4px; /* Kompensasi padding body */
+
+    margin-top: 5px; 
+    margin-left: -4px; 
 }
 
 .cc-line-item {
