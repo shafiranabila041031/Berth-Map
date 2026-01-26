@@ -217,6 +217,7 @@ h2#report-subtitle {
     border-right: 1px dotted #ccc;
     box-sizing: border-box;
     flex-shrink: 0; 
+    font-weight: bold;
 }
 
 .hour-label:nth-child(12n) {
@@ -859,3 +860,4 @@ h2#report-subtitle {
     border-top: 3px dashed;
     opacity: 0.9;
 }
+
