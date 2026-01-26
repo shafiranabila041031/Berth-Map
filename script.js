@@ -147,14 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const footerColor = statusColors[ship.status] || '#718096';
             
             const bodyTextLines = [
-                `${ship.length || '?'}m / ${ship.draft || '?'} / ${ship.destPort || '-'} `,
+                `${ship.length || '?'}m /${ship.draft || '?'} /${ship.destPort || '-'} `,
                 `${ship.berthSide || '?'} / ${ship.berthLocation || '?'} / ${ship.nKd || '?'} / ${ship.minKd || '?'}`,
-                `${formatDateTime(eta)} /${formatDateTime(etb)} / ${formatDateTime(etc)} / ${formatDateTime(etd)}`,
+                `<b>${formatDateTime(eta).replace(' / ', '/')} / ${formatDateTime(etb).replace(' / ', '/')} / ${formatDateTime(etc).replace(' / ', '/')} / ${formatDateTime(etd).replace(' / ', '/')}</b>`,
                 `D ${ship.dischargeValue || 0} / L ${ship.loadValue || 0}`,
-                // `${ship.qccName || '?'} `,
             ];
 
-            // --- LOGIKA BARU GARIS PUTUS-PUTUS (QCC) ---
             let ccLinesHTML = '';
             const shipQCCs = ship.qccName ? ship.qccName.split(' & ') : [];
             
@@ -228,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
         
-        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; // Limit Grid
+        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; 
 
         const visibleMaintenance = maintenanceSchedules.filter(item => {
             if (!item.startTime || !item.endTime) return false;
