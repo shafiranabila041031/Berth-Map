@@ -11,21 +11,19 @@
 <body>
 
     <div id="pdf-header" class="pdf-header"
-         style="display: none; /* Akan diubah jadi flex oleh JS */
-                /* Aktifkan Flexbox */
+         style="display: none; 
                 display: flex;
-                justify-content: space-between; /* Penting: Dorong item ke ujung */
-                align-items: center; /* Sejajarkan vertikal */
-                /* Styling umum */
+                justify-content: space-between; 
+                align-items: center; 
                 padding: 15px 25px;
                 border-bottom: 2px solid #ccc;
                 background-color: white;
                 width: 100%;
                 box-sizing: border-box;">
 
-        <div style="width: 150px; /* Sesuaikan lebar ini agar = lebar logo */ flex-shrink: 0; visibility: hidden;"></div>
+        <div style="width: 150px; flex-shrink: 0; visibility: hidden;"></div>
 
-        <div class="pdf-title-container" style="text-align: center; /* Rata tengah teks */ margin: 0 auto; /* Otomatis tengahkan blok ini */">
+        <div class="pdf-title-container" style="text-align: center; margin: 0 auto;">
             <h1 class="pdf-main-title" style="font-size: 1.8em; font-weight: bold; margin: 0 0 5px 0; color: #333; letter-spacing: 2px;">BERTH ALLOCATION MAP</h1>
             <h2 class="pdf-subtitle" style="font-size: 1.1em; font-weight: bold; margin: 0 0 8px 0; color: #555; letter-spacing: 1px;">TPK NILAM</h2>
             <p class="pdf-date-range" style="font-size: 0.9em; margin: 0; color: #666;"></p>
@@ -74,15 +72,20 @@
                     <div class="berth-labels-container"></div>
                     <div class="y-axis"></div>
                 </div>
+                <div class="y-axis-header-cell" id="bottom-hour-label-header">HOUR</div>
             </div>
+
             <div class="grid-scroll-container">
                 <div class="grid-container">
                     <div class="x-axis"></div>
                     <div id="hour-axis" class="hour-axis"></div>
+                    
                     <div id="grid" class="grid">
                         <div id="berth-divider-line"></div>
                         <div id="current-time-indicator"></div>
-                        </div>
+                    </div>
+
+                    <div id="bottom-hour-axis" class="hour-axis bottom-axis"></div>
                 </div>
             </div>
         </div>
@@ -147,51 +150,11 @@
                              </tr>
                          </thead>
                          <tbody>
-                             <tr>
-                                 <td>1</td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true">WAG</td>
-                             </tr>
-                              <tr>
-                                 <td>2</td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true">WAG</td>
-                             </tr>
-                             <tr>
-                                 <td>3</td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true">WAG</td>
-                             </tr>
-                             <tr>
-                                 <td>4</td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true">WAG</td>
-                             </tr>
-                             <tr>
-                                 <td>5</td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true"></td>
-                                 <td contenteditable="true">WAG</td>
-                             </tr>
+                             <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
+                             <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
+                             <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
+                             <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
+                             <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
                          </tbody>
                      </table>
                  </div>
@@ -312,7 +275,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group form-group-full form-button-group">
                         <button type="submit" class="btn btn-primary">Submit</button>
                         <button type="button" id="delete-ship-btn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
@@ -326,7 +288,6 @@
                 <span class="close-btn">&times;</span>
                 <h2 id="maintenance-modal-title">Tambah Maintenance</h2>
                 <form id="maintenance-form">
-
                     <div class="form-group form-group-full">
                         <label for="maintenance-type">Tipe Blok</label>
                         <select id="maintenance-type" name="type">
@@ -335,17 +296,14 @@
                         </select>
                         <small>Pilih jenis blok yang ingin ditambahkan ke grid.</small>
                     </div>
-                    
                     <div class="form-group">
                         <label for="maintenance-start-kd">Start KD:</label>
                         <input type="number" id="maintenance-start-kd" name="startKd" placeholder="Contoh: 350" min="330" max="650" step="5" required>
                     </div>
-
                     <div class="form-group">
                         <label for="maintenance-end-kd">End KD:</label>
                         <input type="number" id="maintenance-end-kd" name="endKd" placeholder="Contoh: 400" min="330" max="650" step="5" required>
                     </div>
-
                     <div class="form-group">
                         <label for="maintenance-start-time">Waktu Mulai:</label>
                         <input type="datetime-local" id="maintenance-start-time" name="startTime" required>
@@ -354,12 +312,10 @@
                         <label for="maintenance-end-time">Waktu Selesai:</label>
                         <input type="datetime-local" id="maintenance-end-time" name="endTime" required>
                     </div>
-
                     <div class="form-group form-group-full">
                         <label for="maintenance-keterangan">Keterangan:</label>
                         <textarea id="maintenance-keterangan" name="keterangan" rows="3" placeholder="Contoh: Perbaikan Fender"></textarea>
                     </div>
-
                     <div class="form-group form-group-full form-button-group">
                         <button type="submit" class="btn btn-primary">Submit</button>
                         <button type="button" id="delete-maintenance-btn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
@@ -381,12 +337,10 @@
                         <label for="rest-end-time">Waktu Selesai:</label>
                         <input type="datetime-local" id="rest-end-time" name="endTime" required>
                     </div>
-
                     <div class="form-group form-group-full">
                         <label for="rest-keterangan">Keterangan:</label>
                         <textarea id="rest-keterangan" name="keterangan" rows="3" placeholder="Contoh: Istirahat Shift 1"></textarea>
                     </div>
-
                     <div class="form-group form-group-full form-button-group">
                         <button type="submit" class="btn btn-primary">Submit</button>
                         <button type="button" id="delete-rest-btn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
