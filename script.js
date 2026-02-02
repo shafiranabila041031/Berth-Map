@@ -71,14 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
 
-        // BATAS MAKSIMAL: 7 hari * 24 jam * lebar per jam
         const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; 
 
         const visibleShips = shipSchedules.filter(ship => {
             if (!ship.etaTime || !ship.endTime) return false;
             const shipETA = new Date(ship.etaTime);
             const shipETD = new Date(ship.endTime);
-            // Filter: Hanya ambil yang waktunya beririsan dengan minggu ini
             return shipETA < weekEnd && shipETD > weekStart;
         });
 
@@ -93,28 +91,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const getHoursSinceWeekStart = (date) => (date.getTime() - weekStart.getTime()) / (1000 * 60 * 60);
             
-            // 1. Hitung Posisi Mentah (Bisa minus atau melebihi layar)
             let rawLeft = getHoursSinceWeekStart(eta) * HOUR_WIDTH;
             let rawWidth = ((etd.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
-            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2); // Minimal lebar
+            rawWidth = Math.max(rawWidth, HOUR_WIDTH / 2); 
 
-            // 2. LOGIKA PEMOTONGAN (CLIPPING)
             let finalLeft = Math.max(0, rawLeft);
             let leftCropAmount = finalLeft - rawLeft;
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
             let finalWidth = rightEdge - finalLeft;
             if (finalWidth <= 0) return;
 
-
-            // --- Hitung Vertikal (Tetap sama) ---
             const kdUnitPx = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]);
             const top = (ship.berthLocation - KD_MIN) * kdUnitPx;
             const calculatedHeight = ship.length * kdUnitPx;
             const height = Math.max(calculatedHeight, KD_HEIGHT_UNIT / 2); 
             const finalTop = Math.max(top, 0);
 
-
-            // --- Logika Konten di Dalam Wrapper ---
             let rawContentLeft = ((etb.getTime() - eta.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             let rawContentWidth = ((etd.getTime() - etb.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             let adjustedContentLeft = rawContentLeft - leftCropAmount;
@@ -125,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalContentWidth = finalWidth - finalContentLeft;
             }
             
-            // --- Border untuk Jadwal Kapal ---
             const company = ship.company ? ship.company.toUpperCase() : 'UNKNOWN';
             let logoUrl = '', companyColor = '#718096';
             switch(company) {
@@ -199,10 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="ship-body">
                         <div>${bodyTextLines.join('\n').trim()}</div>
-                        
                         ${ccLinesHTML}
                     </div>
-
                 </div>
                 
                 <div class="ship-footer" style="background-color: ${footerColor};">
@@ -244,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let rawLeft = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
             let rawWidth = ((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
             
-            // LOGIKA PEMOTONGAN
             let finalLeft = Math.max(0, rawLeft);
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
             let finalWidth = rightEdge - finalLeft;
@@ -283,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
         
-        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; // Limit Grid
+        const MAX_GRID_WIDTH = 7 * 24 * HOUR_WIDTH; 
 
         const visibleRestTimes = restSchedules.filter(item => {
              if (!item.startTime || !item.endTime) return false;
@@ -300,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let rawLeft = getHoursSinceWeekStart(startTime) * HOUR_WIDTH;
             let rawWidth = ((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * HOUR_WIDTH;
 
-            // LOGIKA PEMOTONGAN
             let finalLeft = Math.max(0, rawLeft);
             let rightEdge = Math.min(MAX_GRID_WIDTH, rawLeft + rawWidth);
             let finalWidth = rightEdge - finalLeft;
@@ -323,27 +310,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function createDraggableCCLines() {
         const ccNames = ['CC04', 'CC03', 'CC02', 'CC01'];
         let initialTopPosition = 50; 
-
         ccNames.forEach(name => {
             const line = document.createElement('div');
             line.className = 'draggable-cc-line';
             line.id = `cc-line-${name}`;
             line.style.top = `${initialTopPosition}px`;
-            
             line.style.borderTopColor = ccLineColors[name];
-
             grid.appendChild(line);
-            
             initialTopPosition += 30; 
         });
     }
  
-
     function saveCommLog() {
         const table = document.getElementById('comm-log-table');
         const rows = table.querySelectorAll('tbody tr');
         const data = [];
-
         rows.forEach(row => {
             const cells = row.querySelectorAll('td[contenteditable="true"]');
             if (cells.length === 6) {
@@ -358,19 +339,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.push(rowData);
             }
         });
-
         localStorage.setItem('communicationLogData', JSON.stringify(data));
     }
     function loadCommLog() {
         const data = JSON.parse(localStorage.getItem('communicationLogData'));
         if (!data) return;
-
         const table = document.getElementById('comm-log-table');
         const rows = table.querySelectorAll('tbody tr');
-
         rows.forEach((row, index) => {
             if (!data[index]) return;
-
             const cells = row.querySelectorAll('td[contenteditable="true"]');
             if (cells.length === 6) {
                 cells[0].textContent = data[index].dateTime;
@@ -454,7 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawGrid() {
+        // --- DEFINE AXIS BAWAH ---
+        const bottomHourAxis = document.getElementById('bottom-hour-axis');
+
         yAxis.innerHTML = ''; xAxis.innerHTML = ''; hourAxis.innerHTML = ''; berthLabelsContainer.innerHTML = '';
+        bottomHourAxis.innerHTML = ''; // Reset axis bawah
+
         grid.innerHTML = ''; 
         const gridContainer = grid.parentElement; 
 
@@ -465,7 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalGridWidth = totalHours * HOUR_WIDTH; 
         const totalKdSteps = KD_MARKERS.length; 
 
-        
         grid.style.position = 'relative'; 
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `repeat(${totalHours}, ${HOUR_WIDTH}px)`;
@@ -473,7 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.style.height = `${(totalKdSteps) * KD_HEIGHT_UNIT}px`;
         grid.style.width = `${totalGridWidth}px`; 
     
-
         for (let row = 0; row < totalKdSteps; row++) {
             for (let col = 0; col < totalHours; col++) {
                 const cell = document.createElement('div');
@@ -502,13 +482,11 @@ document.addEventListener('DOMContentLoaded', () => {
             yAxis.appendChild(label);
         });
 
- 
         const berths = [
             { name: 'BERTH 2', startKd: 330, endKd: 490, ccs: ['CC04', 'CC03'] },
             { name: 'BERTH 1', startKd: 490, endKd: 650, ccs: ['CC02', 'CC01'] }
         ];
 
-      
         const ccColors = {
             'CC01': '#d14c62ff', 
             'CC02': '#0000FF', 
@@ -516,21 +494,17 @@ document.addEventListener('DOMContentLoaded', () => {
             'CC04': '#b5a02aff'  
         };
       
-
         berths.forEach(berth => {
             const berthLabelContainer = document.createElement('div');
             berthLabelContainer.className = 'berth-label-container';
-
             const innerLabelWrapper = document.createElement('div');
             innerLabelWrapper.className = 'berth-label'; 
 
-        
             const kdStepHeight = KD_HEIGHT_UNIT / (KD_MARKERS[1] - KD_MARKERS[0]); 
             const top = (berth.startKd - KD_MIN) * kdStepHeight;
             const height = (berth.endKd - berth.startKd) * kdStepHeight;
             berthLabelContainer.style.top = `${top}px`;
             berthLabelContainer.style.height = `${height}px`;
-
         
             innerLabelWrapper.style.display = 'flex';
             innerLabelWrapper.style.flexDirection = 'row'; 
@@ -539,16 +513,13 @@ document.addEventListener('DOMContentLoaded', () => {
             innerLabelWrapper.style.alignItems = 'center'; 
             innerLabelWrapper.style.paddingLeft = '0';
             innerLabelWrapper.style.paddingRight = '0';
-
             
             const ccEl_Top = document.createElement('div');
             const ccTopName = berth.ccs[1]; 
             ccEl_Top.textContent = ccTopName; 
             ccEl_Top.style.fontSize = '0.9em';
-       
             ccEl_Top.style.color = ccColors[ccTopName] || 'red'; 
             innerLabelWrapper.appendChild(ccEl_Top);
-
 
             const nameEl = document.createElement('div');
             nameEl.textContent = berth.name;
@@ -567,9 +538,11 @@ document.addEventListener('DOMContentLoaded', () => {
             berthLabelsContainer.appendChild(berthLabelContainer);
         });
 
-
         gridContainer.style.width = `${totalGridWidth}px`; 
-        xAxis.style.width = `${totalGridWidth}px`; 
+        xAxis.style.width = `${totalGridWidth}px`;
+        
+        // Atur lebar axis bawah
+        bottomHourAxis.style.width = 'max-content';
 
         const currentDay = new Date(currentStartDate);
         for (let i = 0; i < 7; i++) {
@@ -585,6 +558,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 hourLabel.textContent = h.toString().padStart(2, '0');
                 hourLabel.style.width = `${2 * HOUR_WIDTH}px`; 
                 hourAxis.appendChild(hourLabel);
+
+                const bottomLabel = document.createElement('div');
+                bottomLabel.className = 'hour-label';
+                bottomLabel.textContent = h.toString().padStart(2, '0');
+                bottomLabel.style.width = `${2 * HOUR_WIDTH}px`;
+                if (h === 22) { bottomLabel.style.borderRight = "2px solid #333"; } 
+                bottomHourAxis.appendChild(bottomLabel);
             }
             currentDay.setDate(currentDay.getDate() + 1);
         }
@@ -783,7 +763,6 @@ if (savedQCCs) {
         const gridContainer = document.querySelector('.grid-container');
         const legendsWrapper = document.querySelector('.bottom-legends-wrapper');
 
-        // --- VALIDASI LOGO ---
         if (!pelindoLogoInHeader) {
             console.error("[PDF Export] ERROR: Elemen logo Pelindo tidak ditemukan!");
             alert("Error: Elemen logo Pelindo tidak ditemukan.");
@@ -792,7 +771,6 @@ if (savedQCCs) {
             return;
         }
 
-        // --- UI UPDATE ---
         const originalBtnHTML = exportBtn.innerHTML;
         exportBtn.disabled = true;
         exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kompresi...'; // Feedback user
@@ -803,8 +781,7 @@ if (savedQCCs) {
         }
 
         mainHeader.classList.add('hide-for-pdf'); 
-        
-        // --- TEXT HACK (REST BLOCKS) ---
+
         const restBlocks = document.querySelectorAll('.rest-block');
         const originalRestBlockHTML = []; 
         restBlocks.forEach(block => {
@@ -817,7 +794,6 @@ if (savedQCCs) {
             }
         });
 
-        // --- SIMPAN STATE ASLI ---
         const oldHeaderWidth = pdfHeader.style.width;
         const oldMapWidth = berthMapContainer.style.width;
         const oldLegendsWidth = legendsScrollContainer.style.width;
@@ -846,7 +822,6 @@ if (savedQCCs) {
             const dayWidth = 24 * hourWidth;
             const yAxisWidth = yAxisColumn ? yAxisColumn.offsetWidth : 0;
 
-            // --- LOGIKA DAILY VS WEEKLY ---
             if (type === 'daily') {
                 let today = new Date(); today.setHours(0,0,0,0);
                 let selectedDay = new Date(currentStartDate);
@@ -856,7 +831,7 @@ if (savedQCCs) {
                 pdfDateRangeStr = `${formatDateForPDF(selectedDay)} to ${formatDateForPDF(nextDay)}`;
                 pdfFileName = `Berth-Allocation-Harian-${selectedDay.toISOString().split('T')[0]}.pdf`;
 
-                let dayDiff = 0; // Sesuaikan logic ini jika ingin pilih hari spesifik
+                let dayDiff = 0; 
                 captureWidth = yAxisWidth + (2 * dayWidth); 
                 targetScrollLeft = dayDiff * dayWidth; 
                 captureStartX = targetScrollLeft; 
@@ -866,7 +841,7 @@ if (savedQCCs) {
                 legendsScrollContainer.scrollLeft = 0;
 
             } else { 
-                // WEEKLY
+
                 let startDate = new Date(currentStartDate);
                 let endDate = new Date(startDate);
                 endDate.setDate(startDate.getDate() + 6);
@@ -882,7 +857,6 @@ if (savedQCCs) {
                 legendsScrollContainer.scrollLeft = 0;
             }
 
-            // --- SET LEBAR UNTUK CAPTURE ---
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
             legendsScrollContainer.style.width = (type === 'daily' ? `${legendsFullWidth}px` : `${captureWidth}px`);
@@ -900,17 +874,15 @@ if (savedQCCs) {
                 yAxisColumn.style.zIndex = '18';
             }
 
-            await new Promise(resolve => setTimeout(resolve, 800)); // Delay agar rendering CSS selesai
+            await new Promise(resolve => setTimeout(resolve, 800)); 
 
-            // --- KONFIGURASI HTML2CANVAS OPTIMAL (UKURAN KECIL) ---
-            // Scale 1 (Default) cukup untuk PDF A4/A3, Scale 2 membuat file sangat besar.
             const scale = 1; 
             
             const commonOptions = {
                 scale: scale,
                 useCORS: true,
-                logging: false, // Matikan log biar cepat
-                backgroundColor: '#ffffff' // PENTING: JPEG butuh background putih
+                logging: false, 
+                backgroundColor: '#ffffff' 
             };
 
             const optionsBerthMap = {
@@ -933,15 +905,12 @@ if (savedQCCs) {
                 x: 0 
             };
 
-            // --- CAPTURE ---
             const canvasHeader = await html2canvas(pdfHeader, optionsHeader);
             const canvasMapCombined = await html2canvas(berthMapContainer, optionsBerthMap);
             const canvasLegends = await html2canvas(legendsScrollContainer, optionsLegends);
 
             const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
-            
-            // Hitung Ukuran PDF
-            // 96 DPI adalah standar web. 25.4 mm = 1 inch
+
             const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; 
             const totalPdfHeightMM = canvases.reduce((sum, c) => sum + (c.height / scale / 96) * 25.4, 0);
 
@@ -949,19 +918,16 @@ if (savedQCCs) {
                 orientation: pdfWidthMM > totalPdfHeightMM ? 'landscape' : 'portrait',
                 unit: 'mm',
                 format: [pdfWidthMM, totalPdfHeightMM],
-                compress: true // Aktifkan kompresi internal jsPDF
+                compress: true 
             });
 
             let yOffset = 0;
             for (const canvas of canvases) {
-                // --- PENTING: UBAH KE JPEG UNTUK UKURAN KECIL ---
-                // Format: 'image/jpeg', Quality: 0.75 (75%)
+
                 const imgData = canvas.toDataURL('image/jpeg', 0.75); 
-                
                 const imgHeightMM = (canvas.height / scale / 96) * 25.4;
                 const imgWidthMM = (canvas.width / scale / 96) * 25.4;
                 
-                // Parameter 'FAST' mempercepat kompresi dan mengurangi ukuran
                 doc.addImage(imgData, 'JPEG', 0, yOffset, imgWidthMM, imgHeightMM, undefined, 'FAST');
                 yOffset += imgHeightMM;
             }
@@ -972,7 +938,7 @@ if (savedQCCs) {
             console.error("[PDF Export] Error:", error);
             alert("Terjadi kesalahan saat membuat file PDF.");
         } finally {
-            // --- CLEANUP (KEMBALIKAN TAMPILAN) ---
+
             mainHeader.classList.remove('hide-for-pdf');
 
             restBlocks.forEach((block, index) => {
@@ -1210,7 +1176,7 @@ if (savedQCCs) {
                             if (index === cells.length - 1) {
                                cell.textContent = 'WAG';
                             } else {
-                                 cell.textContent = '';
+                                     cell.textContent = '';
                             }
                         });
                     });
