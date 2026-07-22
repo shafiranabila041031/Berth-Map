@@ -868,3 +868,59 @@ h2#report-subtitle {
     border-top: 3px dashed;
     opacity: 0.9;
 }
+
+.approval-section {
+    width: 360px;
+    min-width: 360px;
+    padding: 20px 25px;
+    background-color: #fff;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    margin-left: auto;
+}
+
+.approval-title {
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 22px;
+}
+
+.approval-barcode {
+    width: 170px;
+    height: 170px;
+    /* border: 2px solid #000; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.approval-barcode img {
+    display: block;
+    width: 155px;
+    height: 155px;
+    object-fit: contain;
+}
+
+.approval-name {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 3px;
+}
+
+.approval-position {
+    max-width: 320px;
+    margin-top: 8px;
+    font-size: 18px;
+    line-height: 1.4;
+    text-align: center;
+}
