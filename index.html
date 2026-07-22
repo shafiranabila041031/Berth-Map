@@ -91,75 +91,187 @@
         </div>
 
         <div class="legends-scroll-container">
-             <div class="bottom-legends-wrapper">
-                 <div class="description-remark-legend">
-                     <div class="legend-column">
-                         <h3>DESCRIPTION</h3>
-                         <ul>
-                             <li><span class="color-box color-vessel-alongside"></span> VESSEL ALONGSIDE</li>
-                             <li><span class="color-box color-on-plotting"></span> VESSEL ON PLOTTING</li>
-                             <li><span class="color-box color-on-planning"></span> VESSEL ON PLANNING</li>
-                             <li><span class="color-box color-vessel-depart"></span> VESSEL DEPART</li>
-                             <li><span class="color-box color-crane-maintenance"></span> CRANE/BERTH MAINTENANCE</li>
-                         </ul>
-                     </div>
-                     <div class="legend-column">
-                         <h3>REMARK</h3>
-                         <ul>
-                             <li><strong class="remark-abbr">OS</strong> OPEN STACK</li>
-                             <li><strong class="remark-abbr">CT</strong> CLOSING TIME</li>
-                             <li><strong class="remark-abbr">EC</strong> EXTRA CALL</li>
-                             <li><strong class="remark-abbr">AD</strong> AGEN DELAYED</li>
-                             <li><strong class="remark-abbr">VT</strong> VESSEL TARGET</li>
-                             <li><strong class="remark-abbr">P</strong> PORT SIDE</li>
-                             <li><strong class="remark-abbr">S</strong> STARBOARD SIDE</li>
-                         </ul>
-                     </div>
-                 </div>
-                 <div class="panel-style-legend">
-                     <div class="legend-item">
-                         <div class="legend-title">NAMA KAPAL</div>
-                         <div class="legend-subtitle">KODE KAPAL / VOYAGE / TAHUN / WINDOW</div>
-                     </div>
-                     <div class="legend-item legend-logo-container">
-                         <div class="legend-title">LOGO</div>
-                         <div class="legend-subtitle">SHIPPING</div>
-                     </div>
-                     <div class="legend-item legend-full-width">INFORMASI KAPAL : LOA / DRAFT / DESTINATION PORT / NEXT PORT</div>
-                     <div class="legend-item legend-full-width">INFORMASI TAMBATAN : PORT/STARBORD / START KD / END KD / MEAN</div>
-                     <div class="legend-item legend-full-width">INFORMASI JADWAL : ETA ETB ETC ETD</div>
-                     <div class="legend-item legend-full-width">INFORMASI MUATAN : DISCHARGE / LOADING</div>
-                     <div class="legend-item legend-full-width">INFORMASI QCC : QCC</div>
-                     <div class="legend-item legend-full-width eta-status-bar">
-                         <span>ETA Warna status perencanaan kapal</span>
-                         <span class="bsh-ps-legend">BSH | P/S</span>
-                     </div>
-                 </div>
-                 <div class="communication-log-container">
-                     <h2>Communication Log</h2>
-                     <table id="comm-log-table">
-                         <thead>
-                             <tr>
-                                 <th>No.</th>
-                                 <th>Date - Time</th>
-                                 <th>Petugas</th>
-                                 <th>Stakeholder</th>
-                                 <th>PIC</th>
-                                 <th>Remark</th>
-                                 <th>Comm Channel</th>
-                             </tr>
-                         </thead>
-                         <tbody>
-                             <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
-                             <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
-                             <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
-                             <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
-                             <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true">WAG</td></tr>
-                         </tbody>
-                     </table>
-                 </div>
-             </div>
+    <div class="bottom-legends-wrapper">
+
+
+        <div class="description-remark-legend">
+            <div class="legend-column">
+                <h3>DESCRIPTION</h3>
+                <ul>
+                    <li>
+                        <span class="color-box color-vessel-alongside"></span>
+                        VESSEL ALONGSIDE
+                    </li>
+                    <li>
+                        <span class="color-box color-on-plotting"></span>
+                        VESSEL ON PLOTTING
+                    </li>
+                    <li>
+                        <span class="color-box color-on-planning"></span>
+                        VESSEL ON PLANNING
+                    </li>
+                    <li>
+                        <span class="color-box color-vessel-depart"></span>
+                        VESSEL DEPART
+                    </li>
+                    <li>
+                        <span class="color-box color-crane-maintenance"></span>
+                        CRANE/BERTH MAINTENANCE
+                    </li>
+                </ul>
+            </div>
+
+            <div class="legend-column">
+                <h3>REMARK</h3>
+                <ul>
+                    <li><strong class="remark-abbr">OS</strong> OPEN STACK</li>
+                    <li><strong class="remark-abbr">CT</strong> CLOSING TIME</li>
+                    <li><strong class="remark-abbr">EC</strong> EXTRA CALL</li>
+                    <li><strong class="remark-abbr">AD</strong> AGEN DELAYED</li>
+                    <li><strong class="remark-abbr">VT</strong> VESSEL TARGET</li>
+                    <li><strong class="remark-abbr">P</strong> PORT SIDE</li>
+                    <li><strong class="remark-abbr">S</strong> STARBOARD SIDE</li>
+                </ul>
+            </div>
         </div>
+
+
+        <div class="panel-style-legend">
+            <div class="legend-item">
+                <div class="legend-title">NAMA KAPAL</div>
+                <div class="legend-subtitle">
+                    KODE KAPAL / VOYAGE / TAHUN / WINDOW
+                </div>
+            </div>
+
+            <div class="legend-item legend-logo-container">
+                <div class="legend-title">LOGO</div>
+                <div class="legend-subtitle">SHIPPING</div>
+            </div>
+
+            <div class="legend-item legend-full-width">
+                INFORMASI KAPAL :
+                LOA / DRAFT / DESTINATION PORT / NEXT PORT
+            </div>
+
+            <div class="legend-item legend-full-width">
+                INFORMASI TAMBATAN :
+                PORT/STARBORD / START KD / END KD / MEAN
+            </div>
+
+            <div class="legend-item legend-full-width">
+                INFORMASI JADWAL :
+                ETA ETB ETC ETD
+            </div>
+
+            <div class="legend-item legend-full-width">
+                INFORMASI MUATAN :
+                DISCHARGE / LOADING
+            </div>
+
+            <div class="legend-item legend-full-width">
+                INFORMASI QCC : QCC
+            </div>
+
+            <div class="legend-item legend-full-width eta-status-bar">
+                <span>ETA Warna status perencanaan kapal</span>
+                <span class="bsh-ps-legend">BSH | P/S</span>
+            </div>
+        </div>
+
+
+        <div class="communication-log-container">
+            <h2>Communication Log</h2>
+
+            <table id="comm-log-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Date - Time</th>
+                        <th>Petugas</th>
+                        <th>Stakeholder</th>
+                        <th>PIC</th>
+                        <th>Remark</th>
+                        <th>Comm Channel</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">WAG</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">WAG</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">WAG</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">WAG</td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">WAG</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="approval-section">
+
+            <div class="approval-title">
+                APPROVED BY
+            </div>
+
+            <div class="approval-barcode">
+                <img
+                    src="./barcode.jpg"
+                    alt="Approval Barcode"
+                >
+            </div>
+
+            <div class="approval-position">
+                Manager Perencanaan dan Pengendalian Operasi
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
         <div id="ship-modal" class="modal">
             <div class="modal-content">
