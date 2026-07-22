@@ -470,8 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timeIndicator.id = 'current-time-indicator';
         grid.appendChild(timeIndicator);
 
-        // createDraggableCCLines();
-
         const kdUnitPx = KD_HEIGHT_UNIT; 
         KD_MARKERS.forEach(kd => {
             const label = document.createElement('div');
@@ -541,7 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gridContainer.style.width = `${totalGridWidth}px`; 
         xAxis.style.width = `${totalGridWidth}px`;
         
-        // Atur lebar axis bawah
         bottomHourAxis.style.width = 'max-content';
 
         const currentDay = new Date(currentStartDate);
@@ -803,6 +800,8 @@ if (savedQCCs) {
         const oldTimeIndicatorDisplay = currentTimeIndicatorPDF ? currentTimeIndicatorPDF.style.display : 'none';
         const oldDividerDisplay = berthDividerLinePDF ? berthDividerLinePDF.style.display : 'block';
 
+        const oldLegendsScrollOverflow = legendsScrollContainer.style.overflowX;
+
         const oldYAxisPosition = yAxisColumn ? yAxisColumn.style.position : '';
         const oldYAxisLeft = yAxisColumn ? yAxisColumn.style.left : '';
         const oldYAxisZIndex = yAxisColumn ? yAxisColumn.style.zIndex : '';
@@ -839,6 +838,7 @@ if (savedQCCs) {
                 gridScroll.style.overflowX = 'hidden';
                 gridScroll.scrollLeft = targetScrollLeft;
                 legendsScrollContainer.scrollLeft = 0;
+                legendsScrollContainer.style.overflowX = 'visible';
 
             } else { 
 
@@ -855,11 +855,15 @@ if (savedQCCs) {
                 gridScroll.style.overflowX = 'visible';
                 gridScroll.scrollLeft = 0;
                 legendsScrollContainer.scrollLeft = 0;
+                legendsScrollContainer.style.overflowX = 'visible';
             }
 
+            const oldLegendsWrapperWidth = legendsWrapper.style.width; 
+            
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
-            legendsScrollContainer.style.width = (type === 'daily' ? `${legendsFullWidth}px` : `${captureWidth}px`);
+            legendsScrollContainer.style.width = `${captureWidth}px`;
+            legendsWrapper.style.width = `${captureWidth}px`;
             
             const dateRangeEl = pdfHeader.querySelector('.pdf-date-range');
             if(dateRangeEl) dateRangeEl.textContent = pdfDateRangeStr;
@@ -894,7 +898,8 @@ if (savedQCCs) {
 
             const optionsLegends = {
                 ...commonOptions,
-                width: (type === 'daily' ? legendsFullWidth : captureWidth),
+                // width: (type === 'daily' ? legendsFullWidth : captureWidth),
+                width: captureWidth,
                 height: legendsScrollContainer.scrollHeight,
                 x: 0, 
             };
@@ -911,8 +916,10 @@ if (savedQCCs) {
 
             const canvases = [canvasHeader, canvasMapCombined, canvasLegends];
 
-            const pdfWidthMM = (canvasMapCombined.width / scale / 96) * 25.4; 
+            const maxCanvasWidth = Math.max(canvasHeader.width, canvasMapCombined.width, canvasLegends.width);
+            const pdfWidthMM = (maxCanvasWidth / scale / 96) * 25.4;
             const totalPdfHeightMM = canvases.reduce((sum, c) => sum + (c.height / scale / 96) * 25.4, 0);
+            
 
             const doc = new jsPDF({
                 orientation: pdfWidthMM > totalPdfHeightMM ? 'landscape' : 'portrait',
@@ -952,10 +959,15 @@ if (savedQCCs) {
             pdfHeader.style.width = oldHeaderWidth;
             berthMapContainer.style.width = oldMapWidth;
             legendsScrollContainer.style.width = oldLegendsWidth;
+
+            legendsWrapper.style.width = oldLegendsWrapperWidth;
+
             gridScroll.style.overflowX = oldGridScrollOverflow;
             gridScroll.scrollLeft = oldGridScrollLeft;
             legendsScrollContainer.scrollLeft = oldLegendsScrollLeft;
             
+            legendsScrollContainer.style.overflowX = oldLegendsScrollOverflow;
+
             if(currentTimeIndicatorPDF) currentTimeIndicatorPDF.style.display = oldTimeIndicatorDisplay; 
             if(berthDividerLinePDF) berthDividerLinePDF.style.display = oldDividerDisplay; 
 
