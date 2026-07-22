@@ -793,7 +793,10 @@ if (savedQCCs) {
 
         const oldHeaderWidth = pdfHeader.style.width;
         const oldMapWidth = berthMapContainer.style.width;
-        const oldLegendsWidth = legendsScrollContainer.style.const oldLegendsWrapperWidth = legendsWrapper.style.width;
+        const oldLegendsWidth = legendsScrollContainer.style.width;
+        
+        const oldLegendsWrapperWidth = legendsWrapper.style.width;
+
         const oldGridScrollOverflow = gridScroll.style.overflowX;
         const oldGridScrollLeft = gridScroll.scrollLeft;
         const oldLegendsScrollLeft = legendsScrollContainer.scrollLeft;
@@ -856,7 +859,7 @@ if (savedQCCs) {
                 gridScroll.scrollLeft = 0;
                 legendsScrollContainer.scrollLeft = 0;
                 legendsScrollContainer.style.overflowX = 'visible';
-            } 
+            }
             
             pdfHeader.style.width = `${captureWidth}px`;
             berthMapContainer.style.width = `${captureWidth}px`;
